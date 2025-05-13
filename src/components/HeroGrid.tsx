@@ -101,7 +101,7 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                       <p className="text-sm font-medium truncate text-white">{hero.name}</p>
                       <Badge 
                         variant="outline" 
-                        className="mt-2 text-xs px-2 py-1 truncate bg-purple-900/40 text-purple-300 border-purple-500/50"
+                        className="mt-2 text-xs px-2 py-1 truncate bg-[#FCDF36] text-[#333645] border-[#FCDF36]/50 font-medium"
                       >
                         {hero.role}
                       </Badge>

@@ -54,6 +54,8 @@
     /* Custom brand colors */
     --banner-color: 231 12% 23%; /* #333645 */
     --brand-red: 351 68% 53%;   /* #D53C53 */
+    --hero-role-bg: 49 96% 60%;  /* #FCDF36 */
+    --hero-role-text: 231 12% 23%; /* #333645 */
   }
 
   .dark {
