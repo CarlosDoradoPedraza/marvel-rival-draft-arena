@@ -15,34 +15,34 @@ const DraftPhaseIndicator: React.FC<DraftPhaseIndicatorProps> = ({
   isComplete,
   isYourTurn = false
 }) => {
-  const teamColor = currentTeam === 'team1' ? 'bg-blue-500' : 'bg-red-500';
-  const actionColor = currentAction === 'ban' ? 'text-red-400' : 'text-green-400';
+  const teamColor = currentTeam === 'team1' ? 'bg-blue-500' : 'bg-[#D53C53]';
+  const actionColor = currentAction === 'ban' ? 'text-red-600' : 'text-green-600';
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 text-center">
+    <div className="bg-white border rounded-lg p-4 text-center shadow-md">
       {isComplete ? (
         <div className="space-y-2">
-          <h3 className="text-xl font-bold text-green-400">Draft Complete!</h3>
-          <p className="text-gray-400">All selections have been made</p>
-          <Progress value={100} className="h-2 bg-gray-700" />
+          <h3 className="text-xl font-bold text-green-600">Draft Complete!</h3>
+          <p className="text-gray-600">All selections have been made</p>
+          <Progress value={100} className="h-2 bg-gray-200" />
         </div>
       ) : (
         <div className="space-y-2">
           <h3 className="text-xl font-bold">
-            <span className={currentTeam === 'team1' ? 'text-blue-400' : 'text-red-400'}>
+            <span className={currentTeam === 'team1' ? 'text-blue-600' : 'text-[#D53C53]'}>
               {currentTeam === 'team1' ? 'Team 1' : 'Team 2'}
             </span>
             {' '}
-            <span className="text-white">turn to</span>
+            <span className="text-gray-800">turn to</span>
             {' '}
             <span className={actionColor}>
               {currentAction === 'ban' ? 'BAN' : 'PROTECT'}
             </span>
             {isYourTurn && (
-              <span className="ml-2 animate-pulse text-yellow-400">(Your Turn)</span>
+              <span className="ml-2 animate-pulse text-[#D53C53]">(Your Turn)</span>
             )}
           </h3>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             {isYourTurn 
               ? (currentAction === 'ban' 
                 ? 'Select a hero to remove from the draft' 
@@ -50,7 +50,7 @@ const DraftPhaseIndicator: React.FC<DraftPhaseIndicatorProps> = ({
               : 'Waiting for the other team to make their selection'
             }
           </p>
-          <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
             <div className={`h-full ${teamColor}`} style={{ width: '50%' }} />
           </div>
         </div>

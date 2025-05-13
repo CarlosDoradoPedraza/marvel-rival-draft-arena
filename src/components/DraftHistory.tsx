@@ -21,14 +21,14 @@ const DraftHistory: React.FC<DraftHistoryProps> = ({ actions }) => {
   };
 
   return (
-    <Card className="bg-gray-800 border-gray-700 h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl text-center text-red-500">Draft History</CardTitle>
+    <Card className="bg-white border shadow-md h-full">
+      <CardHeader className="pb-2 border-b">
+        <CardTitle className="text-xl text-center text-[#D53C53]">Draft History</CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px]">
           {actions.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-gray-500">
               No actions yet. Start the draft to begin.
             </div>
           ) : (
@@ -36,11 +36,11 @@ const DraftHistory: React.FC<DraftHistoryProps> = ({ actions }) => {
               {actions.map((action, index) => (
                 <div 
                   key={index}
-                  className="p-2 border border-gray-700 rounded-md flex items-center justify-between"
+                  className="p-2 border rounded-md flex items-center justify-between bg-white shadow-sm"
                 >
                   <div className="flex items-center gap-2">
                     <Badge 
-                      className={action.team === 'team1' ? 'bg-blue-500' : 'bg-red-500'}
+                      className={action.team === 'team1' ? 'bg-blue-500' : 'bg-[#D53C53]'}
                     >
                       {action.team === 'team1' ? 'Team 1' : 'Team 2'}
                     </Badge>
@@ -54,10 +54,10 @@ const DraftHistory: React.FC<DraftHistoryProps> = ({ actions }) => {
                       {action.type.toUpperCase()}
                     </Badge>
                     
-                    <span className="font-medium">{action.name}</span>
+                    <span className="font-medium text-gray-800">{action.name}</span>
                   </div>
                   
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {formatTime(action.timestamp)}
                   </span>
                 </div>

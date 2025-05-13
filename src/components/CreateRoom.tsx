@@ -28,24 +28,24 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-gray-800 border-gray-700">
+    <Card className="w-full max-w-md mx-auto border shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl text-center text-red-500">Create Draft Room</CardTitle>
-        <CardDescription className="text-center text-gray-400">
+        <CardTitle className="text-2xl text-center text-[#D53C53]">Create Draft Room</CardTitle>
+        <CardDescription className="text-center text-gray-600">
           Configure your draft settings
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="starting-team">Starting Team</Label>
+          <Label htmlFor="starting-team" className="text-gray-700">Starting Team</Label>
           <Select 
             value={settings.startingTeam} 
             onValueChange={(value) => handleChange('startingTeam', value)}
           >
-            <SelectTrigger id="starting-team" className="bg-gray-700 border-gray-600">
+            <SelectTrigger id="starting-team" className="bg-white border">
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-700 border-gray-600">
+            <SelectContent className="bg-white border">
               <SelectItem value="team1">Team 1</SelectItem>
               <SelectItem value="team2">Team 2</SelectItem>
             </SelectContent>
@@ -53,15 +53,15 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="bans">Bans per Team</Label>
+          <Label htmlFor="bans" className="text-gray-700">Bans per Team</Label>
           <Select 
             value={settings.bansPerTeam.toString()} 
             onValueChange={(value) => handleChange('bansPerTeam', parseInt(value))}
           >
-            <SelectTrigger id="bans" className="bg-gray-700 border-gray-600">
+            <SelectTrigger id="bans" className="bg-white border">
               <SelectValue placeholder="Select number" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-700 border-gray-600">
+            <SelectContent className="bg-white border">
               {[1, 2, 3, 4, 5].map((num) => (
                 <SelectItem key={num} value={num.toString()}>
                   {num}
@@ -72,15 +72,15 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="protects">Protects per Team</Label>
+          <Label htmlFor="protects" className="text-gray-700">Protects per Team</Label>
           <Select 
             value={settings.protectsPerTeam.toString()} 
             onValueChange={(value) => handleChange('protectsPerTeam', parseInt(value))}
           >
-            <SelectTrigger id="protects" className="bg-gray-700 border-gray-600">
+            <SelectTrigger id="protects" className="bg-white border">
               <SelectValue placeholder="Select number" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-700 border-gray-600">
+            <SelectContent className="bg-white border">
               {[1, 2, 3, 4].map((num) => (
                 <SelectItem key={num} value={num.toString()}>
                   {num}
@@ -92,7 +92,7 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
       </CardContent>
       <CardFooter>
         <Button 
-          className="w-full bg-red-600 hover:bg-red-700"
+          className="w-full bg-[#D53C53] hover:bg-[#c02d45] text-white"
           onClick={() => onCreateRoom(settings)}
         >
           Create Room
