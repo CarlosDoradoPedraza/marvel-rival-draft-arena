@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
 import DraftHistory from './DraftHistory';
 import { heroesData } from '@/data/heroes';
 import { mapsData } from '@/data/maps';
+import { useLocation } from 'react-router-dom';
 
 interface DraftRoomProps {
   settings: {
@@ -26,6 +28,7 @@ type Action = {
 
 const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const { toast } = useToast();
+  const location = useLocation();
   const [currentTeam, setCurrentTeam] = useState(settings.startingTeam);
   const [currentAction, setCurrentAction] = useState<'ban' | 'protect'>('ban');
   const [bannedHeroes, setBannedHeroes] = useState<string[]>([]);
@@ -36,7 +39,25 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const [draftComplete, setDraftComplete] = useState(false);
   const [turnNumber, setTurnNumber] = useState(0);
   const [roomLink, setRoomLink] = useState('');
+  const [userTeam, setUserTeam] = useState('team1'); // Default: creator is team1
+  const [waitingForOpponent, setWaitingForOpponent] = useState(false);
+  const [opponentJoined, setOpponentJoined] = useState(false);
 
+  // Check if user is joining as a second player
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const joinAsTeam2 = searchParams.get('join') === 'team2';
+    
+    if (joinAsTeam2) {
+      setUserTeam('team2');
+      setOpponentJoined(true);
+      toast({
+        title: "Joined as Team 2",
+        description: "You've joined the draft room as Team 2",
+      });
+    }
+  }, [location, toast]);
+  
   // Create a sequence of turns based on settings
   const generateDraftSequence = () => {
     // Default Marvel Rivals draft sequence
@@ -70,8 +91,9 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const draftSequence = generateDraftSequence();
 
   useEffect(() => {
-    // Generate a "fake" room link when component mounts
-    setRoomLink(`${window.location.origin}/?room=${Math.random().toString(36).substring(2, 8)}`);
+    // Generate a room link with team2 join parameter when component mounts
+    const roomId = Math.random().toString(36).substring(2, 8);
+    setRoomLink(`${window.location.origin}/?room=${roomId}&join=team2`);
   }, []);
 
   const startDraft = () => {
@@ -79,10 +101,21 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     const firstTurn = draftSequence[0];
     setCurrentTeam(firstTurn.team);
     setCurrentAction(firstTurn.action as 'ban' | 'protect');
-    toast({
-      title: "Draft Started",
-      description: `${firstTurn.team === 'team1' ? 'Team 1' : 'Team 2'} ${firstTurn.action === 'ban' ? 'bans' : 'protects'} first`,
-    });
+    
+    // If we're in single player mode, proceed normally
+    // If we're in multiplayer mode and the other player hasn't joined, show waiting status
+    if (userTeam === 'team1' && !opponentJoined) {
+      setWaitingForOpponent(true);
+      toast({
+        title: "Waiting for opponent",
+        description: "Share the room link for Team 2 to join",
+      });
+    } else {
+      toast({
+        title: "Draft Started",
+        description: `${firstTurn.team === 'team1' ? 'Team 1' : 'Team 2'} ${firstTurn.action === 'ban' ? 'bans' : 'protects'} first`,
+      });
+    }
   };
 
   const resetDraft = () => {
@@ -93,6 +126,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     setDraftStarted(false);
     setDraftComplete(false);
     setTurnNumber(0);
+    setWaitingForOpponent(false);
     toast({
       title: "Draft Reset",
       description: "All selections have been cleared",
@@ -111,6 +145,25 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     if (!draftStarted || draftComplete) return;
     
     const currentTurn = draftSequence[turnNumber];
+    
+    // Only allow selection if it's user's team turn
+    if (currentTurn.team !== userTeam) {
+      toast({
+        title: "Not Your Turn",
+        description: `It's ${currentTurn.team === 'team1' ? 'Team 1' : 'Team 2'}'s turn now`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (waitingForOpponent) {
+      toast({
+        title: "Waiting for Opponent",
+        description: "Share the room link for your opponent to join",
+        variant: "destructive",
+      });
+      return;
+    }
     
     // Check if hero is already banned or protected
     if (bannedHeroes.includes(heroName) || 
@@ -164,6 +217,15 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     }
   };
 
+  const simulateOpponentJoining = () => {
+    setOpponentJoined(true);
+    setWaitingForOpponent(false);
+    toast({
+      title: "Opponent Joined",
+      description: "Team 2 has joined the draft room",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 justify-between items-center">
@@ -181,6 +243,11 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
               
               <span className="text-gray-400">Protects per Team:</span>
               <span>{settings.protectsPerTeam}</span>
+              
+              <span className="text-gray-400">Your Team:</span>
+              <span className={userTeam === 'team1' ? 'text-blue-400' : 'text-red-400'}>
+                {userTeam === 'team1' ? 'Team 1' : 'Team 2'}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -209,14 +276,38 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           >
             Copy Room Link
           </Button>
+          
+          {/* For demo purposes only - in a real app this would use WebSockets/Supabase */}
+          {userTeam === 'team1' && waitingForOpponent && (
+            <Button 
+              variant="outline"
+              className="border-green-500 text-green-500 hover:bg-green-500/20"
+              onClick={simulateOpponentJoining}
+            >
+              Simulate Opponent Join
+            </Button>
+          )}
         </div>
       </div>
       
-      {draftStarted && (
+      {waitingForOpponent && (
+        <Alert className="bg-yellow-900/20 border-yellow-600">
+          <AlertTitle>Waiting for opponent to join</AlertTitle>
+          <AlertDescription>
+            Share the room link with your opponent to continue the draft.
+            <div className="mt-2 p-2 bg-gray-800 rounded-md text-sm font-mono break-all">
+              {roomLink}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {draftStarted && !waitingForOpponent && (
         <DraftPhaseIndicator 
           currentTeam={currentTeam}
           currentAction={currentAction}
           isComplete={draftComplete}
+          isYourTurn={currentTeam === userTeam}
         />
       )}
       
@@ -233,7 +324,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 team1Protected={team1Protected}
                 team2Protected={team2Protected}
                 onSelect={handleSelection}
-                disabled={!draftStarted || draftComplete}
+                disabled={!draftStarted || draftComplete || currentTeam !== userTeam || waitingForOpponent}
               />
             </CardContent>
           </Card>

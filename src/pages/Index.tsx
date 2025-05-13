@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from 'react-router-dom';
 import DraftRoom from '@/components/DraftRoom';
 import CreateRoom from '@/components/CreateRoom';
 
@@ -12,6 +13,23 @@ const Index = () => {
     bansPerTeam: 3,
     protectsPerTeam: 2,
   });
+  const location = useLocation();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Check if there's a room parameter in the URL
+    const searchParams = new URLSearchParams(location.search);
+    const roomParam = searchParams.get('room');
+    
+    if (roomParam) {
+      // A user is joining via link, automatically create/join the room
+      setRoomCreated(true);
+      toast({
+        title: "Joining Room",
+        description: `Connected to room: ${roomParam}`,
+      });
+    }
+  }, [location, toast]);
   
   const handleCreateRoom = (settings: any) => {
     setRoomSettings(settings);

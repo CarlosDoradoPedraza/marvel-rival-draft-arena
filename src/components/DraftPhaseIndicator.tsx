@@ -6,12 +6,14 @@ interface DraftPhaseIndicatorProps {
   currentTeam: string;
   currentAction: 'ban' | 'protect';
   isComplete: boolean;
+  isYourTurn?: boolean;
 }
 
 const DraftPhaseIndicator: React.FC<DraftPhaseIndicatorProps> = ({ 
   currentTeam, 
   currentAction, 
-  isComplete 
+  isComplete,
+  isYourTurn = false
 }) => {
   const teamColor = currentTeam === 'team1' ? 'bg-blue-500' : 'bg-red-500';
   const actionColor = currentAction === 'ban' ? 'text-red-400' : 'text-green-400';
@@ -36,11 +38,16 @@ const DraftPhaseIndicator: React.FC<DraftPhaseIndicatorProps> = ({
             <span className={actionColor}>
               {currentAction === 'ban' ? 'BAN' : 'PROTECT'}
             </span>
+            {isYourTurn && (
+              <span className="ml-2 animate-pulse text-yellow-400">(Your Turn)</span>
+            )}
           </h3>
           <p className="text-gray-400">
-            {currentAction === 'ban' 
-              ? 'Select a hero to remove from the draft'
-              : 'Select a hero to protect for your team'
+            {isYourTurn 
+              ? (currentAction === 'ban' 
+                ? 'Select a hero to remove from the draft' 
+                : 'Select a hero to protect for your team')
+              : 'Waiting for the other team to make their selection'
             }
           </p>
           <div className="h-2 w-full bg-gray-700 rounded-full overflow-hidden">
