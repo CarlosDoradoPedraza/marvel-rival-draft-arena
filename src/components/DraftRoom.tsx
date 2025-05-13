@@ -229,32 +229,32 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 justify-between items-center">
-        <Card className="w-full md:w-auto bg-gray-800 border-gray-700">
+        <Card className="w-full md:w-auto bg-gray-800 border-gray-700 shadow-lg shadow-purple-700/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl text-red-500">Room Settings</CardTitle>
+            <CardTitle className="text-xl text-purple-400">Room Settings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <span className="text-gray-400">Starting Team:</span>
-              <span>{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
+              <span className="font-medium">{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
               
               <span className="text-gray-400">Bans per Team:</span>
-              <span>{settings.bansPerTeam}</span>
+              <span className="font-medium">{settings.bansPerTeam}</span>
               
               <span className="text-gray-400">Protects per Team:</span>
-              <span>{settings.protectsPerTeam}</span>
+              <span className="font-medium">{settings.protectsPerTeam}</span>
               
               <span className="text-gray-400">Your Team:</span>
-              <span className={userTeam === 'team1' ? 'text-blue-400' : 'text-red-400'}>
+              <span className={`font-medium ${userTeam === 'team1' ? 'text-blue-400' : 'text-red-400'}`}>
                 {userTeam === 'team1' ? 'Team 1' : 'Team 2'}
               </span>
             </div>
           </CardContent>
         </Card>
         
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           <Button 
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-purple-500/50 transition-all"
             onClick={startDraft}
             disabled={draftStarted}
           >
@@ -263,7 +263,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           
           <Button 
             variant="outline" 
-            className="border-red-600 text-red-600 hover:bg-red-600/20"
+            className="border-purple-600 text-purple-400 hover:bg-purple-600/20"
             onClick={resetDraft}
           >
             Reset Draft
@@ -271,7 +271,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           
           <Button 
             variant="outline"
-            className="border-blue-500 text-blue-500 hover:bg-blue-500/20"
+            className="border-blue-500 text-blue-400 hover:bg-blue-500/20"
             onClick={copyRoomLink}
           >
             Copy Room Link
@@ -281,7 +281,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           {userTeam === 'team1' && waitingForOpponent && (
             <Button 
               variant="outline"
-              className="border-green-500 text-green-500 hover:bg-green-500/20"
+              className="border-green-500 text-green-400 hover:bg-green-500/20"
               onClick={simulateOpponentJoining}
             >
               Simulate Opponent Join
@@ -291,11 +291,11 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       </div>
       
       {waitingForOpponent && (
-        <Alert className="bg-yellow-900/20 border-yellow-600">
-          <AlertTitle>Waiting for opponent to join</AlertTitle>
+        <Alert className="bg-yellow-900/20 border-yellow-600 shadow-lg">
+          <AlertTitle className="text-yellow-400">Waiting for opponent to join</AlertTitle>
           <AlertDescription>
             Share the room link with your opponent to continue the draft.
-            <div className="mt-2 p-2 bg-gray-800 rounded-md text-sm font-mono break-all">
+            <div className="mt-2 p-3 bg-gray-800 rounded-md text-sm font-mono break-all border border-yellow-600/30">
               {roomLink}
             </div>
           </AlertDescription>
@@ -313,11 +313,11 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Card className="bg-gray-800 border-gray-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl text-center text-red-500">Hero Selection</CardTitle>
+          <Card className="bg-gray-800 border-gray-700 shadow-xl">
+            <CardHeader className="pb-2 border-b border-gray-700">
+              <CardTitle className="text-xl text-center text-purple-400">Hero Selection</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4">
               <HeroGrid 
                 heroes={heroesData}
                 bannedHeroes={bannedHeroes}
@@ -325,6 +325,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 team2Protected={team2Protected}
                 onSelect={handleSelection}
                 disabled={!draftStarted || draftComplete || currentTeam !== userTeam || waitingForOpponent}
+                currentTeam={currentTeam}
+                currentAction={currentAction}
               />
             </CardContent>
           </Card>

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -97,5 +98,53 @@
 
   body {
     @apply bg-background text-foreground;
+    background-image: linear-gradient(to bottom, #13151a, #1a1d2a);
+    min-height: 100vh;
+  }
+  
+  /* Add custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #1a1d2a;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #464a68;
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #5a5f87;
+  }
+}
+
+/* Animation classes */
+.animate-pulse-soft {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px -5px #a855f7;
+  }
+  to {
+    box-shadow: 0 0 20px 5px #a855f7;
   }
 }
