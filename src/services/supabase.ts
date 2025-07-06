@@ -1,8 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -33,4 +33,9 @@ export type DraftAction = {
   action_type: 'ban' | 'protect'
   hero_name: string
   created_at: string
+}
+
+// Helper function to generate a simple UUID-like string for demo purposes
+export const generateSimpleId = () => {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
 }

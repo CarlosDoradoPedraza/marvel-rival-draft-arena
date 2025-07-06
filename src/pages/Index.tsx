@@ -19,30 +19,43 @@ const Index = () => {
   const { createRoom } = useDraftRoom(null, 'team1');
   
   useEffect(() => {
-    // Check if there's a room parameter in the URL
-    const searchParams = new URLSearchParams(location.search);
-    const roomParam = searchParams.get('room');
-    
-    if (roomParam) {
-      // A user is joining via link
-      setRoomId(roomParam);
-      setRoomCreated(true);
-      toast({
-        title: "Joining Room",
-        description: `Connected to room: ${roomParam.substring(0, 8)}...`,
-      });
+    try {
+      // Check if there's a room parameter in the URL
+      const searchParams = new URLSearchParams(location.search);
+      const roomParam = searchParams.get('room');
+      
+      if (roomParam) {
+        // A user is joining via link
+        setRoomId(roomParam);
+        setRoomCreated(true);
+        toast({
+          title: "Joining Room",
+          description: `Connected to room: ${roomParam.substring(0, 8)}...`,
+        });
+      }
+    } catch (error) {
+      console.error('Error parsing URL parameters:', error);
     }
   }, [location, toast]);
   
   const handleCreateRoom = async (settings: any) => {
-    const newRoomId = await createRoom(settings);
-    if (newRoomId) {
-      setRoomId(newRoomId);
-      setRoomSettings(settings);
-      setRoomCreated(true);
+    try {
+      const newRoomId = await createRoom(settings);
+      if (newRoomId) {
+        setRoomId(newRoomId);
+        setRoomSettings(settings);
+        setRoomCreated(true);
+        toast({
+          title: "Room Created",
+          description: "Draft room created successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Error creating room:', error);
       toast({
-        title: "Room Created",
-        description: "Draft room created successfully",
+        title: "Error",
+        description: "Failed to create room",
+        variant: "destructive",
       });
     }
   };

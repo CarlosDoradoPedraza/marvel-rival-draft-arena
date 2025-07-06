@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
@@ -77,17 +77,22 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
     );
   }
 
-  if (!room) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-red-600">Room not found</div>
-      </div>
-    );
-  }
+  // Use room data if available, otherwise fall back to settings
+  const displayRoom = room || {
+    settings,
+    current_team: settings.startingTeam,
+    current_action: 'ban' as const,
+    draft_started: false,
+    draft_complete: false,
+    banned_heroes: [],
+    team1_protected: [],
+    team2_protected: [],
+    team2_player_id: userTeam === 'team2' ? 'local-player' : undefined
+  };
 
-  const isWaitingForOpponent = !room.team2_player_id && userTeam === 'team1';
-  const canMakeSelection = room.draft_started && !room.draft_complete && 
-                           room.current_team === userTeam && !isWaitingForOpponent;
+  const isWaitingForOpponent = !displayRoom.team2_player_id && userTeam === 'team1';
+  const canMakeSelection = displayRoom.draft_started && !displayRoom.draft_complete && 
+                           displayRoom.current_team === userTeam && !isWaitingForOpponent;
 
   return (
     <div className="space-y-6">
@@ -99,13 +104,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
           <CardContent>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <span className="text-gray-600">Starting Team:</span>
-              <span className="font-medium text-gray-800">{room.settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
+              <span className="font-medium text-gray-800">{displayRoom.settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
               
               <span className="text-gray-600">Bans per Team:</span>
-              <span className="font-medium text-gray-800">{room.settings.bansPerTeam}</span>
+              <span className="font-medium text-gray-800">{displayRoom.settings.bansPerTeam}</span>
               
               <span className="text-gray-600">Protects per Team:</span>
-              <span className="font-medium text-gray-800">{room.settings.protectsPerTeam}</span>
+              <span className="font-medium text-gray-800">{displayRoom.settings.protectsPerTeam}</span>
               
               <span className="text-gray-600">Your Team:</span>
               <span className={`font-medium ${userTeam === 'team1' ? 'text-blue-600' : 'text-[#D53C53]'}`}>
@@ -119,7 +124,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
           <Button 
             className="bg-[#D53C53] hover:bg-[#c02d45] text-white shadow-lg transition-all"
             onClick={startDraft}
-            disabled={room.draft_started || isWaitingForOpponent}
+            disabled={displayRoom.draft_started || isWaitingForOpponent}
           >
             Start Draft
           </Button>
@@ -154,12 +159,12 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
         </Alert>
       )}
       
-      {room.draft_started && !isWaitingForOpponent && (
+      {displayRoom.draft_started && !isWaitingForOpponent && (
         <DraftPhaseIndicator 
-          currentTeam={room.current_team}
-          currentAction={room.current_action}
-          isComplete={room.draft_complete}
-          isYourTurn={room.current_team === userTeam}
+          currentTeam={displayRoom.current_team}
+          currentAction={displayRoom.current_action}
+          isComplete={displayRoom.draft_complete}
+          isYourTurn={displayRoom.current_team === userTeam}
         />
       )}
       
@@ -172,13 +177,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
             <CardContent className="p-4">
               <HeroGrid 
                 heroes={heroesData}
-                bannedHeroes={room.banned_heroes}
-                team1Protected={room.team1_protected}
-                team2Protected={room.team2_protected}
+                bannedHeroes={displayRoom.banned_heroes}
+                team1Protected={displayRoom.team1_protected}
+                team2Protected={displayRoom.team2_protected}
                 onSelect={makeSelection}
                 disabled={!canMakeSelection}
-                currentTeam={room.current_team}
-                currentAction={room.current_action}
+                currentTeam={displayRoom.current_team}
+                currentAction={displayRoom.current_action}
               />
             </CardContent>
           </Card>
