@@ -8,8 +8,8 @@ import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
 import DraftHistory from './DraftHistory';
 import { heroesData } from '@/data/heroes';
-import { mapsData } from '@/data/maps';
 import { useLocation } from 'react-router-dom';
+import { useDraftRoom } from '@/hooks/useDraftRoom';
 
 interface DraftRoomProps {
   settings: {
@@ -17,121 +17,49 @@ interface DraftRoomProps {
     bansPerTeam: number;
     protectsPerTeam: number;
   };
+  roomId?: string;
 }
 
-type Action = {
-  team: string;
-  type: 'ban' | 'protect';
-  name: string;
-  timestamp: Date;
-};
-
-const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
+const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
   const { toast } = useToast();
   const location = useLocation();
-  const [currentTeam, setCurrentTeam] = useState(settings.startingTeam);
-  const [currentAction, setCurrentAction] = useState<'ban' | 'protect'>('ban');
-  const [bannedHeroes, setBannedHeroes] = useState<string[]>([]);
-  const [team1Protected, setTeam1Protected] = useState<string[]>([]);
-  const [team2Protected, setTeam2Protected] = useState<string[]>([]);
-  const [actions, setActions] = useState<Action[]>([]);
-  const [draftStarted, setDraftStarted] = useState(false);
-  const [draftComplete, setDraftComplete] = useState(false);
-  const [turnNumber, setTurnNumber] = useState(0);
+  const [userTeam, setUserTeam] = useState('team1');
   const [roomLink, setRoomLink] = useState('');
-  const [userTeam, setUserTeam] = useState('team1'); // Default: creator is team1
-  const [waitingForOpponent, setWaitingForOpponent] = useState(false);
-  const [opponentJoined, setOpponentJoined] = useState(false);
 
-  // Check if user is joining as a second player
+  // Determine user team from URL
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const joinAsTeam2 = searchParams.get('join') === 'team2';
     
     if (joinAsTeam2) {
       setUserTeam('team2');
-      setOpponentJoined(true);
-      toast({
-        title: "Joined as Team 2",
-        description: "You've joined the draft room as Team 2",
-      });
     }
-  }, [location, toast]);
-  
-  // Create a sequence of turns based on settings
-  const generateDraftSequence = () => {
-    // Default Marvel Rivals draft sequence
-    const sequence = [];
-    
-    // Team 1 bans
-    sequence.push({ team: 'team1', action: 'ban' });
-    
-    // Team 2 bans + protects
-    sequence.push({ team: 'team2', action: 'ban' });
-    sequence.push({ team: 'team2', action: 'protect' });
-    
-    // Team 1 protects + bans
-    sequence.push({ team: 'team1', action: 'protect' });
-    sequence.push({ team: 'team1', action: 'ban' });
-    
-    // Team 2 bans + protects
-    sequence.push({ team: 'team2', action: 'ban' });
-    sequence.push({ team: 'team2', action: 'protect' });
-    
-    // Team 1 protects + bans
-    sequence.push({ team: 'team1', action: 'protect' });
-    sequence.push({ team: 'team1', action: 'ban' });
-    
-    // Team 2 bans
-    sequence.push({ team: 'team2', action: 'ban' });
-    
-    return sequence;
-  };
+  }, [location]);
 
-  const draftSequence = generateDraftSequence();
+  const {
+    room,
+    actions,
+    loading,
+    createRoom,
+    joinRoom,
+    startDraft,
+    makeSelection,
+    resetDraft,
+  } = useDraftRoom(roomId || null, userTeam);
 
+  // Generate room link
   useEffect(() => {
-    // Generate a room link with team2 join parameter when component mounts
-    const roomId = Math.random().toString(36).substring(2, 8);
-    setRoomLink(`${window.location.origin}/?room=${roomId}&join=team2`);
-  }, []);
-
-  const startDraft = () => {
-    setDraftStarted(true);
-    const firstTurn = draftSequence[0];
-    setCurrentTeam(firstTurn.team);
-    setCurrentAction(firstTurn.action as 'ban' | 'protect');
-    
-    // If we're in single player mode, proceed normally
-    // If we're in multiplayer mode and the other player hasn't joined, show waiting status
-    if (userTeam === 'team1' && !opponentJoined) {
-      setWaitingForOpponent(true);
-      toast({
-        title: "Waiting for opponent",
-        description: "Share the room link for Team 2 to join",
-      });
-    } else {
-      toast({
-        title: "Draft Started",
-        description: `${firstTurn.team === 'team1' ? 'Team 1' : 'Team 2'} ${firstTurn.action === 'ban' ? 'bans' : 'protects'} first`,
-      });
+    if (roomId) {
+      setRoomLink(`${window.location.origin}/?room=${roomId}&join=team2`);
     }
-  };
+  }, [roomId]);
 
-  const resetDraft = () => {
-    setBannedHeroes([]);
-    setTeam1Protected([]);
-    setTeam2Protected([]);
-    setActions([]);
-    setDraftStarted(false);
-    setDraftComplete(false);
-    setTurnNumber(0);
-    setWaitingForOpponent(false);
-    toast({
-      title: "Draft Reset",
-      description: "All selections have been cleared",
-    });
-  };
+  // Join room if coming from link
+  useEffect(() => {
+    if (roomId && userTeam === 'team2') {
+      joinRoom(roomId);
+    }
+  }, [roomId, userTeam, joinRoom]);
 
   const copyRoomLink = () => {
     navigator.clipboard.writeText(roomLink);
@@ -141,90 +69,25 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     });
   };
 
-  const handleSelection = (heroName: string) => {
-    if (!draftStarted || draftComplete) return;
-    
-    const currentTurn = draftSequence[turnNumber];
-    
-    // Only allow selection if it's user's team turn
-    if (currentTurn.team !== userTeam) {
-      toast({
-        title: "Not Your Turn",
-        description: `It's ${currentTurn.team === 'team1' ? 'Team 1' : 'Team 2'}'s turn now`,
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (waitingForOpponent) {
-      toast({
-        title: "Waiting for Opponent",
-        description: "Share the room link for your opponent to join",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Check if hero is already banned or protected
-    if (bannedHeroes.includes(heroName) || 
-        team1Protected.includes(heroName) || 
-        team2Protected.includes(heroName)) {
-      toast({
-        title: "Invalid Selection",
-        description: "This hero is already banned or protected",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Record the action
-    const newAction = {
-      team: currentTeam,
-      type: currentAction,
-      name: heroName,
-      timestamp: new Date(),
-    };
-    setActions([...actions, newAction]);
-    
-    // Update the appropriate state
-    if (currentAction === 'ban') {
-      setBannedHeroes([...bannedHeroes, heroName]);
-    } else {
-      if (currentTeam === 'team1') {
-        setTeam1Protected([...team1Protected, heroName]);
-      } else {
-        setTeam2Protected([...team2Protected, heroName]);
-      }
-    }
-    
-    // Move to next turn
-    const nextTurnIndex = turnNumber + 1;
-    if (nextTurnIndex < draftSequence.length) {
-      const nextTurn = draftSequence[nextTurnIndex];
-      setCurrentTeam(nextTurn.team);
-      setCurrentAction(nextTurn.action as 'ban' | 'protect');
-      setTurnNumber(nextTurnIndex);
-      toast({
-        title: "Next Turn",
-        description: `${nextTurn.team === 'team1' ? 'Team 1' : 'Team 2'} ${nextTurn.action === 'ban' ? 'bans' : 'protects'} next`,
-      });
-    } else {
-      setDraftComplete(true);
-      toast({
-        title: "Draft Complete",
-        description: "All selections have been made",
-      });
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading draft room...</div>
+      </div>
+    );
+  }
 
-  const simulateOpponentJoining = () => {
-    setOpponentJoined(true);
-    setWaitingForOpponent(false);
-    toast({
-      title: "Opponent Joined",
-      description: "Team 2 has joined the draft room",
-    });
-  };
+  if (!room) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">Room not found</div>
+      </div>
+    );
+  }
+
+  const isWaitingForOpponent = !room.team2_player_id && userTeam === 'team1';
+  const canMakeSelection = room.draft_started && !room.draft_complete && 
+                           room.current_team === userTeam && !isWaitingForOpponent;
 
   return (
     <div className="space-y-6">
@@ -236,13 +99,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           <CardContent>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <span className="text-gray-600">Starting Team:</span>
-              <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
+              <span className="font-medium text-gray-800">{room.settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
               
               <span className="text-gray-600">Bans per Team:</span>
-              <span className="font-medium text-gray-800">{settings.bansPerTeam}</span>
+              <span className="font-medium text-gray-800">{room.settings.bansPerTeam}</span>
               
               <span className="text-gray-600">Protects per Team:</span>
-              <span className="font-medium text-gray-800">{settings.protectsPerTeam}</span>
+              <span className="font-medium text-gray-800">{room.settings.protectsPerTeam}</span>
               
               <span className="text-gray-600">Your Team:</span>
               <span className={`font-medium ${userTeam === 'team1' ? 'text-blue-600' : 'text-[#D53C53]'}`}>
@@ -256,7 +119,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           <Button 
             className="bg-[#D53C53] hover:bg-[#c02d45] text-white shadow-lg transition-all"
             onClick={startDraft}
-            disabled={draftStarted}
+            disabled={room.draft_started || isWaitingForOpponent}
           >
             Start Draft
           </Button>
@@ -276,21 +139,10 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           >
             Copy Room Link
           </Button>
-          
-          {/* For demo purposes only - in a real app this would use WebSockets/Supabase */}
-          {userTeam === 'team1' && waitingForOpponent && (
-            <Button 
-              variant="outline"
-              className="border-green-500 text-green-500 hover:bg-green-500/10"
-              onClick={simulateOpponentJoining}
-            >
-              Simulate Opponent Join
-            </Button>
-          )}
         </div>
       </div>
       
-      {waitingForOpponent && (
+      {isWaitingForOpponent && (
         <Alert className="bg-amber-50 border-amber-300 shadow">
           <AlertTitle className="text-amber-700">Waiting for opponent to join</AlertTitle>
           <AlertDescription className="text-amber-600">
@@ -302,12 +154,12 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         </Alert>
       )}
       
-      {draftStarted && !waitingForOpponent && (
+      {room.draft_started && !isWaitingForOpponent && (
         <DraftPhaseIndicator 
-          currentTeam={currentTeam}
-          currentAction={currentAction}
-          isComplete={draftComplete}
-          isYourTurn={currentTeam === userTeam}
+          currentTeam={room.current_team}
+          currentAction={room.current_action}
+          isComplete={room.draft_complete}
+          isYourTurn={room.current_team === userTeam}
         />
       )}
       
@@ -320,20 +172,25 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
             <CardContent className="p-4">
               <HeroGrid 
                 heroes={heroesData}
-                bannedHeroes={bannedHeroes}
-                team1Protected={team1Protected}
-                team2Protected={team2Protected}
-                onSelect={handleSelection}
-                disabled={!draftStarted || draftComplete || currentTeam !== userTeam || waitingForOpponent}
-                currentTeam={currentTeam}
-                currentAction={currentAction}
+                bannedHeroes={room.banned_heroes}
+                team1Protected={room.team1_protected}
+                team2Protected={room.team2_protected}
+                onSelect={makeSelection}
+                disabled={!canMakeSelection}
+                currentTeam={room.current_team}
+                currentAction={room.current_action}
               />
             </CardContent>
           </Card>
         </div>
         
         <div>
-          <DraftHistory actions={actions} />
+          <DraftHistory actions={actions.map(action => ({
+            team: action.team,
+            type: action.action_type as 'ban' | 'protect',
+            name: action.hero_name,
+            timestamp: new Date(action.created_at),
+          }))} />
         </div>
       </div>
     </div>

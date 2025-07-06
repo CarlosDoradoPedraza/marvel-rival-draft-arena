@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from 'react-router-dom';
 import DraftRoom from '@/components/DraftRoom';
 import CreateRoom from '@/components/CreateRoom';
+import { useDraftRoom } from '@/hooks/useDraftRoom';
 
 const Index = () => {
   const [roomCreated, setRoomCreated] = useState(false);
+  const [roomId, setRoomId] = useState<string | null>(null);
   const [roomSettings, setRoomSettings] = useState({
     startingTeam: 'team1',
     bansPerTeam: 3,
@@ -15,6 +16,7 @@ const Index = () => {
   });
   const location = useLocation();
   const { toast } = useToast();
+  const { createRoom } = useDraftRoom(null, 'team1');
   
   useEffect(() => {
     // Check if there's a room parameter in the URL
@@ -22,18 +24,27 @@ const Index = () => {
     const roomParam = searchParams.get('room');
     
     if (roomParam) {
-      // A user is joining via link, automatically create/join the room
+      // A user is joining via link
+      setRoomId(roomParam);
       setRoomCreated(true);
       toast({
         title: "Joining Room",
-        description: `Connected to room: ${roomParam}`,
+        description: `Connected to room: ${roomParam.substring(0, 8)}...`,
       });
     }
   }, [location, toast]);
   
-  const handleCreateRoom = (settings: any) => {
-    setRoomSettings(settings);
-    setRoomCreated(true);
+  const handleCreateRoom = async (settings: any) => {
+    const newRoomId = await createRoom(settings);
+    if (newRoomId) {
+      setRoomId(newRoomId);
+      setRoomSettings(settings);
+      setRoomCreated(true);
+      toast({
+        title: "Room Created",
+        description: "Draft room created successfully",
+      });
+    }
   };
 
   return (
@@ -48,7 +59,7 @@ const Index = () => {
         {!roomCreated ? (
           <CreateRoom onCreateRoom={handleCreateRoom} />
         ) : (
-          <DraftRoom settings={roomSettings} />
+          <DraftRoom settings={roomSettings} roomId={roomId || undefined} />
         )}
       </main>
       
