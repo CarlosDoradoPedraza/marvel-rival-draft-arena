@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
-import BanPickDisplay from './BanPickDisplay';
+import DraftHistory from './DraftHistory';
 import { heroesData } from '@/data/heroes';
 
 interface DraftRoomProps {
@@ -122,34 +122,32 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   };
 
   return (
-    <div className="space-y-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen p-4">
+    <div className="space-y-6">
       <div className="flex flex-wrap gap-4 justify-between items-center">
-        <Card className="w-full md:w-auto bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600/50 shadow-2xl">
+        <Card className="w-full md:w-auto bg-white border shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl bg-gradient-to-r from-red-500 via-yellow-500 to-red-600 bg-clip-text text-transparent">
-              Draft Settings
-            </CardTitle>
+            <CardTitle className="text-xl text-[#D53C53]">Draft Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <span className="text-slate-300">Mode:</span>
-              <span className="font-medium text-white">Local Simulation</span>
+              <span className="text-gray-600">Mode:</span>
+              <span className="font-medium text-gray-800">Local Simulation</span>
               
-              <span className="text-slate-300">Starting Team:</span>
-              <span className="font-medium text-white">{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
+              <span className="text-gray-600">Starting Team:</span>
+              <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
               
-              <span className="text-slate-300">Bans per Team:</span>
-              <span className="font-medium text-white">{settings.bansPerTeam}</span>
+              <span className="text-gray-600">Bans per Team:</span>
+              <span className="font-medium text-gray-800">{settings.bansPerTeam}</span>
               
-              <span className="text-slate-300">Protects per Team:</span>
-              <span className="font-medium text-white">{settings.protectsPerTeam}</span>
+              <span className="text-gray-600">Protects per Team:</span>
+              <span className="font-medium text-gray-800">{settings.protectsPerTeam}</span>
             </div>
           </CardContent>
         </Card>
         
         <div className="flex flex-wrap gap-3">
           <Button 
-            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg transition-all font-bold px-6"
+            className="bg-[#D53C53] hover:bg-[#c02d45] text-white shadow-lg transition-all"
             onClick={startDraft}
             disabled={draftStarted}
           >
@@ -158,7 +156,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           
           <Button 
             variant="outline" 
-            className="border-red-500 text-red-400 hover:bg-red-500/10 bg-transparent backdrop-blur-sm"
+            className="border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10"
             onClick={resetDraft}
           >
             Reset Draft
@@ -175,28 +173,30 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         />
       )}
       
-      <div className="space-y-6">
-        <BanPickDisplay actions={actions} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="bg-white border shadow-md">
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-xl text-center text-[#D53C53]">Hero Selection</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <HeroGrid 
+                heroes={heroesData}
+                bannedHeroes={bannedHeroes}
+                team1Protected={team1Protected}
+                team2Protected={team2Protected}
+                onSelect={makeSelection}
+                disabled={!draftStarted || draftComplete}
+                currentTeam={currentTeam}
+                currentAction={currentAction}
+              />
+            </CardContent>
+          </Card>
+        </div>
         
-        <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600/50 shadow-2xl">
-          <CardHeader className="pb-2 border-b border-slate-600/50">
-            <CardTitle className="text-xl text-center bg-gradient-to-r from-red-500 via-yellow-500 to-red-600 bg-clip-text text-transparent">
-              Hero Selection
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <HeroGrid 
-              heroes={heroesData}
-              bannedHeroes={bannedHeroes}
-              team1Protected={team1Protected}
-              team2Protected={team2Protected}
-              onSelect={makeSelection}
-              disabled={!draftStarted || draftComplete}
-              currentTeam={currentTeam}
-              currentAction={currentAction}
-            />
-          </CardContent>
-        </Card>
+        <div>
+          <DraftHistory actions={actions} />
+        </div>
       </div>
     </div>
   );

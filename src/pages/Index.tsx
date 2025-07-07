@@ -23,13 +23,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-gray-100">
-      <header className="py-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/50 shadow-2xl">
+    <div className="min-h-screen bg-white text-gray-800">
+      <header className="py-6 bg-[#333645]">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-center bg-gradient-to-r from-red-500 via-yellow-500 to-red-600 bg-clip-text text-transparent">
-            Marvel Rivals Draft Arena
-          </h1>
-          <p className="text-center text-slate-300 mt-3 text-lg font-medium">Local Simulation Mode</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-center text-white">Marvel Rivals Draft Arena</h1>
+          <p className="text-center text-gray-300 mt-2">Local Simulation Mode</p>
         </div>
       </header>
 
@@ -41,8 +39,8 @@ const Index = () => {
         )}
       </main>
       
-      <footer className="py-6 border-t border-slate-700/50 bg-slate-900/50">
-        <div className="container mx-auto px-4 text-center text-slate-400">
+      <footer className="py-4 border-t border-gray-200">
+        <div className="container mx-auto px-4 text-center text-gray-600">
           <p>© 2025 Marvel Rivals Draft Arena | Not affiliated with Marvel or NetEase Games</p>
         </div>
       </footer>
