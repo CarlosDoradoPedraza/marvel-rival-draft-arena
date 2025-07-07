@@ -27,7 +27,6 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
 
   const createRoom = async (settings: any) => {
     try {
-      // Generate a simple ID for demo purposes
       const userId = generateSimpleId()
       
       const roomData: Omit<DraftRoom, 'id' | 'created_at'> = {
@@ -51,56 +50,41 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
 
       if (error) {
         console.error('Supabase error:', error)
-        // Fallback to local room creation if Supabase fails
-        const localRoom: DraftRoom = {
-          id: generateSimpleId(),
-          created_at: new Date().toISOString(),
-          ...roomData
-        }
-        setRoom(localRoom)
-        setLoading(false)
-        return localRoom.id
+        throw error
       }
       
+      console.log('Room created successfully:', data.id)
       return data.id
     } catch (error) {
       console.error('Error creating room:', error)
       toast({
         title: "Error",
-        description: "Failed to create room, using local mode",
+        description: "Failed to create room",
         variant: "destructive",
       })
-      
-      // Create a local room as fallback
-      const localRoom: DraftRoom = {
-        id: generateSimpleId(),
-        created_at: new Date().toISOString(),
-        settings,
-        current_team: settings.startingTeam,
-        current_action: 'ban',
-        turn_number: 0,
-        draft_started: false,
-        draft_complete: false,
-        banned_heroes: [],
-        team1_protected: [],
-        team2_protected: [],
-        team1_player_id: generateSimpleId()
-      }
-      setRoom(localRoom)
-      setLoading(false)
-      return localRoom.id
+      return null
     }
   }
 
   const joinRoom = async (roomId: string) => {
     try {
       const userId = generateSimpleId()
-      const { error } = await supabase
+      console.log('Joining room:', roomId, 'as user:', userId)
+      
+      const { data, error } = await supabase
         .from('draft_rooms')
         .update({ team2_player_id: userId })
         .eq('id', roomId)
+        .select()
+        .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error joining room:', error)
+        throw error
+      }
+      
+      console.log('Successfully joined room:', data)
+      setRoom(data)
       
       toast({
         title: "Joined Room",
@@ -109,8 +93,9 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
     } catch (error) {
       console.error('Error joining room:', error)
       toast({
-        title: "Info",
-        description: "Joined room in local mode",
+        title: "Error",
+        description: "Failed to join room",
+        variant: "destructive",
       })
     }
   }
@@ -119,22 +104,28 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
     if (!room) return
 
     try {
-      const { error } = await supabase
+      console.log('Starting draft for room:', room.id)
+      
+      const { data, error } = await supabase
         .from('draft_rooms')
         .update({ draft_started: true })
         .eq('id', room.id)
+        .select()
+        .single()
 
       if (error) {
-        // Update local state as fallback
-        setRoom(prev => prev ? { ...prev, draft_started: true } : null)
+        console.error('Error starting draft:', error)
+        throw error
       }
+      
+      console.log('Draft started successfully')
+      setRoom(data)
     } catch (error) {
       console.error('Error starting draft:', error)
-      // Update local state as fallback
-      setRoom(prev => prev ? { ...prev, draft_started: true } : null)
       toast({
-        title: "Draft Started",
-        description: "Draft started in local mode",
+        title: "Error",
+        description: "Failed to start draft",
+        variant: "destructive",
       })
     }
   }
@@ -155,19 +146,24 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
     }
 
     try {
+      console.log('Making selection:', heroName, 'for team:', userTeam)
+      
       // Add action to history
-      const newAction: DraftAction = {
-        id: generateSimpleId(),
+      const newAction: Omit<DraftAction, 'id' | 'created_at'> = {
         room_id: room.id,
         team: currentTurn.team,
         action_type: currentTurn.action as 'ban' | 'protect',
         hero_name: heroName,
-        created_at: new Date().toISOString()
       }
 
-      await supabase
+      const { error: actionError } = await supabase
         .from('draft_actions')
         .insert(newAction)
+
+      if (actionError) {
+        console.error('Error inserting action:', actionError)
+        throw actionError
+      }
 
       // Update room state
       const updates: Partial<DraftRoom> = {}
@@ -190,16 +186,20 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
         updates.draft_complete = true
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('draft_rooms')
         .update(updates)
         .eq('id', room.id)
+        .select()
+        .single()
 
       if (error) {
-        // Update local state as fallback
-        setRoom(prev => prev ? { ...prev, ...updates } : null)
-        setActions(prev => [...prev, newAction])
+        console.error('Error updating room:', error)
+        throw error
       }
+      
+      console.log('Selection made successfully:', data)
+      setRoom(data)
     } catch (error) {
       console.error('Error making selection:', error)
       toast({
@@ -225,42 +225,35 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
         team2_protected: [],
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('draft_rooms')
         .update(resetData)
         .eq('id', room.id)
+        .select()
+        .single()
 
-      if (error) {
-        // Update local state as fallback
-        setRoom(prev => prev ? { ...prev, ...resetData } : null)
-        setActions([])
-      }
+      if (error) throw error
+
+      setRoom(data)
 
       // Clear actions
       await supabase
         .from('draft_actions')
         .delete()
         .eq('room_id', room.id)
-    } catch (error) {
-      console.error('Error resetting draft:', error)
-      // Update local state as fallback
-      if (room) {
-        setRoom({
-          ...room,
-          current_team: room.settings.startingTeam,
-          current_action: 'ban',
-          turn_number: 0,
-          draft_started: false,
-          draft_complete: false,
-          banned_heroes: [],
-          team1_protected: [],
-          team2_protected: [],
-        })
-        setActions([])
-      }
+      
+      setActions([])
+      
       toast({
         title: "Draft Reset",
-        description: "Draft reset in local mode",
+        description: "Draft has been reset",
+      })
+    } catch (error) {
+      console.error('Error resetting draft:', error)
+      toast({
+        title: "Error",
+        description: "Failed to reset draft",
+        variant: "destructive",
       })
     }
   }
@@ -272,6 +265,8 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
       return
     }
 
+    console.log('Setting up subscriptions for room:', roomId)
+
     const fetchRoom = async () => {
       try {
         const { data, error } = await supabase
@@ -281,6 +276,7 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
           .single()
 
         if (!error && data) {
+          console.log('Fetched room data:', data)
           setRoom(data)
         } else {
           console.error('Room not found:', error)
@@ -300,6 +296,7 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
           .order('created_at', { ascending: true })
 
         if (!error && data) {
+          console.log('Fetched actions:', data)
           setActions(data)
         }
       } catch (error) {
@@ -312,33 +309,40 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
 
     // Subscribe to room updates
     const roomSubscription = supabase
-      .channel(`room_${roomId}`)
+      .channel(`room-${roomId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'draft_rooms',
         filter: `id=eq.${roomId}`,
       }, (payload) => {
+        console.log('Room update received:', payload)
         if (payload.eventType === 'UPDATE') {
           setRoom(payload.new as DraftRoom)
         }
       })
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Room subscription status:', status)
+      })
 
     // Subscribe to action updates
     const actionsSubscription = supabase
-      .channel(`actions_${roomId}`)
+      .channel(`actions-${roomId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'draft_actions',
         filter: `room_id=eq.${roomId}`,
       }, (payload) => {
+        console.log('New action received:', payload)
         setActions(prev => [...prev, payload.new as DraftAction])
       })
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Actions subscription status:', status)
+      })
 
     return () => {
+      console.log('Unsubscribing from channels')
       roomSubscription.unsubscribe()
       actionsSubscription.unsubscribe()
     }

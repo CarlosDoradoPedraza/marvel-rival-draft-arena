@@ -33,6 +33,9 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
     
     if (joinAsTeam2) {
       setUserTeam('team2');
+      console.log('User joining as Team 2');
+    } else {
+      console.log('User is Team 1');
     }
   }, [location]);
 
@@ -40,7 +43,6 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
     room,
     actions,
     loading,
-    createRoom,
     joinRoom,
     startDraft,
     makeSelection,
@@ -50,16 +52,19 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
   // Generate room link
   useEffect(() => {
     if (roomId) {
-      setRoomLink(`${window.location.origin}/?room=${roomId}&join=team2`);
+      const link = `${window.location.origin}/?room=${roomId}&join=team2`;
+      setRoomLink(link);
+      console.log('Generated room link:', link);
     }
   }, [roomId]);
 
   // Join room if coming from link
   useEffect(() => {
-    if (roomId && userTeam === 'team2') {
+    if (roomId && userTeam === 'team2' && !room?.team2_player_id) {
+      console.log('Attempting to join room:', roomId);
       joinRoom(roomId);
     }
-  }, [roomId, userTeam, joinRoom]);
+  }, [roomId, userTeam, joinRoom, room?.team2_player_id]);
 
   const copyRoomLink = () => {
     navigator.clipboard.writeText(roomLink);
@@ -94,6 +99,15 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
   const canMakeSelection = displayRoom.draft_started && !displayRoom.draft_complete && 
                            displayRoom.current_team === userTeam && !isWaitingForOpponent;
 
+  console.log('Render state:', {
+    userTeam,
+    currentTeam: displayRoom.current_team,
+    draftStarted: displayRoom.draft_started,
+    canMakeSelection,
+    isWaitingForOpponent,
+    team2Connected: !!displayRoom.team2_player_id
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4 justify-between items-center">
@@ -103,18 +117,20 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings, roomId }) => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3 text-sm">
+              <span className="text-gray-600">Room ID:</span>
+              <span className="font-medium text-gray-800 text-xs">{roomId?.substring(0, 8)}...</span>
+              
               <span className="text-gray-600">Starting Team:</span>
               <span className="font-medium text-gray-800">{displayRoom.settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
-              
-              <span className="text-gray-600">Bans per Team:</span>
-              <span className="font-medium text-gray-800">{displayRoom.settings.bansPerTeam}</span>
-              
-              <span className="text-gray-600">Protects per Team:</span>
-              <span className="font-medium text-gray-800">{displayRoom.settings.protectsPerTeam}</span>
               
               <span className="text-gray-600">Your Team:</span>
               <span className={`font-medium ${userTeam === 'team1' ? 'text-blue-600' : 'text-[#D53C53]'}`}>
                 {userTeam === 'team1' ? 'Team 1' : 'Team 2'}
+              </span>
+              
+              <span className="text-gray-600">Team 2 Connected:</span>
+              <span className={`font-medium ${displayRoom.team2_player_id ? 'text-green-600' : 'text-red-600'}`}>
+                {displayRoom.team2_player_id ? 'Yes' : 'No'}
               </span>
             </div>
           </CardContent>
