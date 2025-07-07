@@ -48,6 +48,43 @@ const HeroGrid: React.FC<HeroGridProps> = ({
     return { status: 'available', team: '' };
   };
 
+  const getHeroImage = (heroName: string) => {
+    // Using different Unsplash images for variety
+    const imageMap: { [key: string]: string } = {
+      'Iron Man': 'photo-1635805737707-575885ab0820',
+      'Spider-Man': 'photo-1608889175123-8ee362201f81',
+      'Captain America': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Black Panther': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Doctor Strange': 'photo-1635805737707-575885ab0820',
+      'Hulk': 'photo-1608889175123-8ee362201f81',
+      'Thor': 'photo-1635805737707-575885ab0820',
+      'Black Widow': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Loki': 'photo-1608889175123-8ee362201f81',
+      'Storm': 'photo-1635805737707-575885ab0820',
+      'Rocket Raccoon': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Star-Lord': 'photo-1608889175123-8ee362201f81',
+      'Groot': 'photo-1635805737707-575885ab0820',
+      'Magneto': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Luna Snow': 'photo-1608889175123-8ee362201f81',
+      'Magik': 'photo-1635805737707-575885ab0820',
+      'Mantis': 'photo-1608889335941-c0d9b7d0e8e8',
+      'Namor': 'photo-1608889175123-8ee362201f81',
+      'Adam Warlock': 'photo-1635805737707-575885ab0820',
+      'Peni Parker': 'photo-1608889335941-c0d9b7d0e8e8'
+    };
+    
+    return `https://images.unsplash.com/${imageMap[heroName] || 'photo-1608889175123-8ee362201f81'}?w=200&h=200&fit=crop&crop=face`;
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role.toLowerCase()) {
+      case 'damage': return 'from-red-500 to-orange-500';
+      case 'tank': return 'from-blue-500 to-cyan-500';
+      case 'support': return 'from-green-500 to-emerald-500';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
+
   const handleHeroClick = (hero: Hero) => {
     if (disabled || getHeroStatus(hero).status !== 'available') return;
     
@@ -80,56 +117,68 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                 <TooltipTrigger asChild>
                   <div 
                     className={`
-                      relative flex flex-col items-center rounded-lg overflow-hidden cursor-pointer transition-all duration-300
-                      ${status === 'banned' ? 'opacity-50 grayscale' : ''}
-                      ${status === 'protected' && team === 'team1' ? 'ring-2 ring-blue-500' : ''}
-                      ${status === 'protected' && team === 'team2' ? 'ring-2 ring-red-500' : ''}
-                      ${status === 'available' && !disabled ? 'hover:scale-105 hover:shadow-lg hover:shadow-purple-700/30' : ''}
+                      relative flex flex-col items-center rounded-xl overflow-hidden cursor-pointer transition-all duration-300 group
+                      ${status === 'banned' ? 'opacity-60 saturate-0' : ''}
+                      ${status === 'protected' && team === 'team1' ? 'ring-2 ring-blue-500 shadow-lg shadow-blue-500/30' : ''}
+                      ${status === 'protected' && team === 'team2' ? 'ring-2 ring-red-500 shadow-lg shadow-red-500/30' : ''}
+                      ${status === 'available' && !disabled ? 'hover:scale-105 hover:shadow-2xl hover:shadow-purple-700/40' : ''}
                       ${disabled ? 'cursor-not-allowed' : status === 'available' ? 'cursor-pointer' : 'cursor-default'}
-                      transform-gpu
+                      transform-gpu bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900
+                      border border-slate-600/50
                     `}
                     onClick={() => handleHeroClick(hero)}
                   >
-                    <div className="w-full aspect-square bg-gray-800 overflow-hidden">
+                    <div className="w-full aspect-square bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden relative">
                       <img 
-                        src={`https://images.unsplash.com/photo-1488590528505-98d2b5aba04b`} 
+                        src={getHeroImage(hero.name)}
                         alt={hero.name}
-                        className="w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                       />
-                    </div>
-                    <div className="w-full p-3 bg-gray-900 text-center">
-                      <p className="text-sm font-medium truncate text-white">{hero.name}</p>
-                      <Badge 
-                        variant="outline" 
-                        className="mt-2 text-xs px-2 py-1 truncate bg-[#FCDF36] text-[#333645] border-[#FCDF36]/50 font-medium"
-                      >
+                      
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                      
+                      {/* Role indicator */}
+                      <div className={`absolute top-2 left-2 px-2 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${getRoleColor(hero.role)} text-white shadow-lg`}>
                         {hero.role}
-                      </Badge>
+                      </div>
                     </div>
+                    
+                    <div className="w-full p-3 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 text-center">
+                      <p className="text-sm font-bold truncate text-white group-hover:text-yellow-400 transition-colors">
+                        {hero.name}
+                      </p>
+                    </div>
+
                     {status === 'banned' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                        <p className="font-bold text-red-500 text-lg tracking-wider">BANNED</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                        <div className="text-center">
+                          <p className="font-bold text-red-500 text-lg tracking-wider mb-2">BANNED</p>
+                          <div className="w-12 h-1 bg-red-500 mx-auto rounded-full"></div>
+                        </div>
                       </div>
                     )}
+                    
                     {status === 'protected' && (
                       <div className="absolute top-2 right-2">
-                        <Badge className={`${team === 'team1' ? 'bg-blue-600' : 'bg-red-600'} text-white shadow-lg`}>
+                        <Badge className={`${team === 'team1' ? 'bg-blue-600 border-blue-400' : 'bg-red-600 border-red-400'} text-white shadow-lg font-bold`}>
                           {team === 'team1' ? 'TEAM 1' : 'TEAM 2'}
                         </Badge>
                       </div>
                     )}
+                    
                     {!disabled && status === 'available' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 opacity-0 hover:opacity-100 transition-all duration-300">
-                        <p className={`font-bold ${currentAction === 'ban' ? 'text-yellow-500' : 'text-green-500'} text-lg tracking-wider px-3 py-2 bg-black/80 rounded-full`}>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <div className={`font-bold ${currentAction === 'ban' ? 'text-red-400' : 'text-green-400'} text-lg tracking-wider px-4 py-2 bg-black/90 rounded-full backdrop-blur-sm border-2 ${currentAction === 'ban' ? 'border-red-500' : 'border-green-500'}`}>
                           {currentAction === 'ban' ? 'BAN?' : 'PROTECT?'}
-                        </p>
+                        </div>
                       </div>
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent className="bg-gray-800 text-white border-gray-700">
+                <TooltipContent className="bg-slate-800 text-white border-slate-600">
                   <p className="font-bold">{hero.name}</p>
-                  <p className="text-xs text-gray-400">{hero.role}</p>
+                  <p className="text-xs text-gray-300">{hero.role}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
