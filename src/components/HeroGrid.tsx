@@ -115,11 +115,18 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                       </div>
                     )}
                     {status === 'protected' && (
-                      <div className="absolute top-2 right-2">
-                        <Badge className={`${team === 'team1' ? 'bg-blue-600' : 'bg-red-600'} text-white shadow-lg`}>
-                          {team === 'team1' ? 'TEAM 1' : 'TEAM 2'}
-                        </Badge>
-                      </div>
+                      <>
+                        <div className="absolute top-2 right-2">
+                          <Badge className={`${team === 'team1' ? 'bg-blue-600' : 'bg-red-600'} text-white shadow-lg text-xs font-bold`}>
+                            {team === 'team1' ? 'TEAM 1' : 'TEAM 2'}
+                          </Badge>
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end justify-center p-2">
+                          <Badge className={`${team === 'team1' ? 'bg-blue-500/90' : 'bg-red-500/90'} text-white text-xs font-bold px-3 py-1`}>
+                            PROTECTED
+                          </Badge>
+                        </div>
+                      </>
                     )}
                     {!disabled && status === 'available' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 opacity-0 hover:opacity-100 transition-all duration-300">

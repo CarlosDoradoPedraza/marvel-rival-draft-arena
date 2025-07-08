@@ -224,7 +224,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         </div>
         
         <div>
-          <DraftHistory actions={actions} />
+          <DraftHistory actions={actions} heroes={heroesData} />
         </div>
       </div>
     </div>
