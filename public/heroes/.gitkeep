@@ -1,0 +1,11 @@
+# Heroes Images Folder
+
+Place your hero images in this folder with the exact names as specified in src/data/heroes.ts
+
+Examples:
+- iron-man.jpg
+- spider-man.jpg
+- captain-america.jpg
+- etc.
+
+The images will automatically appear in the hero grid once added.

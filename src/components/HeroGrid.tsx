@@ -92,9 +92,12 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                   >
                     <div className="w-full aspect-square bg-gray-800 overflow-hidden">
                       <img 
-                        src={`https://images.unsplash.com/photo-1488590528505-98d2b5aba04b`} 
+                        src={`/heroes/${hero.image}`} 
                         alt={hero.name}
                         className="w-full h-full object-cover transition-transform hover:scale-110 duration-300"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                        }}
                       />
                     </div>
                     <div className="w-full p-3 bg-gray-900 text-center">
