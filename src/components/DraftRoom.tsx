@@ -34,6 +34,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const [team1Protected, setTeam1Protected] = useState<string[]>([]);
   const [team2Protected, setTeam2Protected] = useState<string[]>([]);
   const [actions, setActions] = useState<Action[]>([]);
+  const [roleFilter, setRoleFilter] = useState<string>('All');
 
   // Generate draft sequence
   const generateDraftSequence = () => {
@@ -114,12 +115,18 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     setTeam1Protected([]);
     setTeam2Protected([]);
     setActions([]);
+    setRoleFilter('All');
     
     toast({
       title: "Draft Reset",
       description: "Draft has been reset",
     });
   };
+
+  // Filter heroes based on selected role
+  const filteredHeroes = roleFilter === 'All' 
+    ? heroesData 
+    : heroesData.filter(hero => hero.role === roleFilter);
 
   return (
     <div className="space-y-6">
@@ -178,10 +185,32 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           <Card className="bg-white border shadow-md">
             <CardHeader className="pb-2 border-b">
               <CardTitle className="text-xl text-center text-[#D53C53]">Hero Selection</CardTitle>
+              <div className="flex flex-wrap gap-2 justify-center mt-3">
+                {['All', 'Vanguard', 'Duelist', 'Strategist'].map((role) => (
+                  <Button
+                    key={role}
+                    variant={roleFilter === role ? "default" : "outline"}
+                    size="sm"
+                    className={`text-xs ${
+                      roleFilter === role 
+                        ? 'bg-[#D53C53] text-white hover:bg-[#c02d45]' 
+                        : 'border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10'
+                    }`}
+                    onClick={() => setRoleFilter(role)}
+                  >
+                    {role}
+                    {role !== 'All' && (
+                      <span className="ml-1 text-xs opacity-75">
+                        ({heroesData.filter(h => h.role === role).length})
+                      </span>
+                    )}
+                  </Button>
+                ))}
+              </div>
             </CardHeader>
             <CardContent className="p-4">
               <HeroGrid 
-                heroes={heroesData}
+                heroes={filteredHeroes}
                 bannedHeroes={bannedHeroes}
                 team1Protected={team1Protected}
                 team2Protected={team2Protected}
