@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Shield, X } from "lucide-react";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
 import DraftHistory from './DraftHistory';
@@ -193,8 +194,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 {actions.filter(action => action.team === 'team1').map((action, index) => (
                   <div 
                     key={index} 
-                    className={`w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
-                      action.type === 'ban' ? 'border-red-500' : 'border-blue-500'
+                    className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-green-500'
                     }`}
                   >
                     <img 
@@ -207,6 +208,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
                       }}
                     />
+                    <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
+                      {action.type === 'ban' ? (
+                        <X className="w-3 h-3 text-red-500" />
+                      ) : (
+                        <Shield className="w-3 h-3 text-green-500" />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -223,8 +231,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 {actions.filter(action => action.team === 'team2').map((action, index) => (
                   <div 
                     key={index} 
-                    className={`w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
-                      action.type === 'ban' ? 'border-red-500' : 'border-[#D53C53]'
+                    className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-green-500'
                     }`}
                   >
                     <img 
@@ -237,6 +245,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                         e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
                       }}
                     />
+                    <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
+                      {action.type === 'ban' ? (
+                        <X className="w-3 h-3 text-red-500" />
+                      ) : (
+                        <Shield className="w-3 h-3 text-green-500" />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
