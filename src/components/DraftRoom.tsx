@@ -189,41 +189,26 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
               <CardTitle className="text-lg text-center text-blue-600">Team 1</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Bans ({bannedHeroes.filter((_, i) => i % 2 === 0).length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {bannedHeroes.filter((_, i) => i % 2 === 0).map((heroName) => (
-                      <div key={heroName} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 border-red-500">
-                        <img 
-                          src={`/heroes/${heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
-                          alt={heroName}
-                          className="w-full h-full object-cover object-top grayscale"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                          }}
-                        />
-                      </div>
-                    ))}
+              <div className="flex flex-wrap gap-2">
+                {actions.filter(action => action.team === 'team1').map((action, index) => (
+                  <div 
+                    key={index} 
+                    className={`w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-blue-500'
+                    }`}
+                  >
+                    <img 
+                      src={`/heroes/${action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
+                      alt={action.name}
+                      className={`w-full h-full object-cover object-top ${
+                        action.type === 'ban' ? 'grayscale' : ''
+                      }`}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                      }}
+                    />
                   </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Protections ({team1Protected.length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {team1Protected.map((heroName) => (
-                      <div key={heroName} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 border-blue-500">
-                        <img 
-                          src={`/heroes/${heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
-                          alt={heroName}
-                          className="w-full h-full object-cover object-top"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -234,41 +219,26 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
               <CardTitle className="text-lg text-center text-[#D53C53]">Team 2</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Bans ({bannedHeroes.filter((_, i) => i % 2 === 1).length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {bannedHeroes.filter((_, i) => i % 2 === 1).map((heroName) => (
-                      <div key={heroName} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 border-red-500">
-                        <img 
-                          src={`/heroes/${heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
-                          alt={heroName}
-                          className="w-full h-full object-cover object-top grayscale"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                          }}
-                        />
-                      </div>
-                    ))}
+              <div className="flex flex-wrap gap-2">
+                {actions.filter(action => action.team === 'team2').map((action, index) => (
+                  <div 
+                    key={index} 
+                    className={`w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-[#D53C53]'
+                    }`}
+                  >
+                    <img 
+                      src={`/heroes/${action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
+                      alt={action.name}
+                      className={`w-full h-full object-cover object-top ${
+                        action.type === 'ban' ? 'grayscale' : ''
+                      }`}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                      }}
+                    />
                   </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Protections ({team2Protected.length})</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {team2Protected.map((heroName) => (
-                      <div key={heroName} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 border-[#D53C53]">
-                        <img 
-                          src={`/heroes/${heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
-                          alt={heroName}
-                          className="w-full h-full object-cover object-top"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
