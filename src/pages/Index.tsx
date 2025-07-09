@@ -7,6 +7,8 @@ import CreateRoom from '@/components/CreateRoom';
 const Index = () => {
   const [roomCreated, setRoomCreated] = useState(false);
   const [roomSettings, setRoomSettings] = useState({
+    team1Name: 'Team 1',
+    team2Name: 'Team 2',
     startingTeam: 'team1',
     bansPerTeam: 3,
     protectsPerTeam: 2,

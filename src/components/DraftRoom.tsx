@@ -11,6 +11,8 @@ import { heroesData } from '@/data/heroes';
 
 interface DraftRoomProps {
   settings: {
+    team1Name: string;
+    team2Name: string;
     startingTeam: string;
     bansPerTeam: number;
     protectsPerTeam: number;
@@ -101,7 +103,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     }
 
     toast({
-      title: `${currentTurn.team === 'team1' ? 'Team 1' : 'Team 2'} ${currentTurn.action}ned ${heroName}`,
+      title: `${currentTurn.team === 'team1' ? settings.team1Name : settings.team2Name} ${currentTurn.action}ned ${heroName}`,
       description: `Selection confirmed`,
     });
   };
@@ -142,7 +144,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
               <span className="font-medium text-gray-800">Local Simulation</span>
               
               <span className="text-gray-600">Starting Team:</span>
-              <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? 'Team 1' : 'Team 2'}</span>
+              <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? settings.team1Name : settings.team2Name}</span>
               
               <span className="text-gray-600">Bans per Team:</span>
               <span className="font-medium text-gray-800">{settings.bansPerTeam}</span>
@@ -178,6 +180,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           currentAction={currentAction}
           isComplete={draftComplete}
           isYourTurn={true}
+          team1Name={settings.team1Name}
+          team2Name={settings.team2Name}
         />
       )}
       
@@ -187,7 +191,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           {/* Team 1 */}
           <Card className="bg-white border shadow-md">
             <CardHeader className="pb-2 border-b">
-              <CardTitle className="text-lg text-center text-blue-600">Team 1</CardTitle>
+              <CardTitle className="text-lg text-center text-blue-600">{settings.team1Name}</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-2">
@@ -224,7 +228,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           {/* Team 2 */}
           <Card className="bg-white border shadow-md">
             <CardHeader className="pb-2 border-b">
-              <CardTitle className="text-lg text-center text-[#D53C53]">Team 2</CardTitle>
+              <CardTitle className="text-lg text-center text-[#D53C53]">{settings.team2Name}</CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-2">

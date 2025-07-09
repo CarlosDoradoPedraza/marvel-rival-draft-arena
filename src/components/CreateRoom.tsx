@@ -3,10 +3,13 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 interface CreateRoomProps {
   onCreateRoom: (settings: {
+    team1Name: string;
+    team2Name: string;
     startingTeam: string;
     bansPerTeam: number;
     protectsPerTeam: number;
@@ -15,6 +18,8 @@ interface CreateRoomProps {
 
 const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
   const [settings, setSettings] = useState({
+    team1Name: 'Team 1',
+    team2Name: 'Team 2',
     startingTeam: 'team1',
     bansPerTeam: 3,
     protectsPerTeam: 2,
@@ -37,6 +42,30 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
+          <Label htmlFor="team1-name" className="text-gray-700">Team 1 Name</Label>
+          <Input
+            id="team1-name"
+            type="text"
+            value={settings.team1Name}
+            onChange={(e) => handleChange('team1Name', e.target.value)}
+            placeholder="Enter team 1 name"
+            className="bg-white border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="team2-name" className="text-gray-700">Team 2 Name</Label>
+          <Input
+            id="team2-name"
+            type="text"
+            value={settings.team2Name}
+            onChange={(e) => handleChange('team2Name', e.target.value)}
+            placeholder="Enter team 2 name"
+            className="bg-white border"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="starting-team" className="text-gray-700">Starting Team</Label>
           <Select 
             value={settings.startingTeam} 
@@ -46,8 +75,8 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
               <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent className="bg-white border">
-              <SelectItem value="team1">Team 1</SelectItem>
-              <SelectItem value="team2">Team 2</SelectItem>
+              <SelectItem value="team1">{settings.team1Name}</SelectItem>
+              <SelectItem value="team2">{settings.team2Name}</SelectItem>
             </SelectContent>
           </Select>
         </div>
