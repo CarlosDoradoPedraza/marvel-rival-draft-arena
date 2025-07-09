@@ -38,8 +38,7 @@ const DraftHistory: React.FC<DraftHistoryProps> = ({ actions, heroes }) => {
       <CardHeader className="pb-2 border-b">
         <CardTitle className="text-xl text-center text-[#D53C53]">Draft History</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px]">
+      <CardContent className="max-h-none">
           {actions.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No actions yet. Start the draft to begin.
@@ -93,7 +92,6 @@ const DraftHistory: React.FC<DraftHistoryProps> = ({ actions, heroes }) => {
               ))}
             </div>
           )}
-        </ScrollArea>
       </CardContent>
     </Card>
   );

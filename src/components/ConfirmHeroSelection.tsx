@@ -43,8 +43,15 @@ const ConfirmHeroSelection: React.FC<ConfirmHeroSelectionProps> = ({
         </DialogHeader>
         
         <div className="my-4 flex items-center justify-center">
-          <div className="bg-gray-700 rounded-lg p-4 w-24 h-24 flex items-center justify-center">
-            <span className="text-3xl font-bold">{heroName.charAt(0)}</span>
+          <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-800 border-2">
+            <img 
+              src={`/heroes/${heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
+              alt={heroName}
+              className="w-full h-full object-cover object-top"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+              }}
+            />
           </div>
         </div>
         
@@ -52,7 +59,7 @@ const ConfirmHeroSelection: React.FC<ConfirmHeroSelectionProps> = ({
           <Button
             variant="outline"
             onClick={onCancel}
-            className="border-gray-500 text-gray-300 hover:bg-gray-700 hover:text-white"
+            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
           >
             Cancel
           </Button>
