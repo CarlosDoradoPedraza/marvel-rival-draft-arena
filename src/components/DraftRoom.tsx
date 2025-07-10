@@ -250,7 +250,10 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                     }`}
                   >
                     <img 
-                      src={`/heroes/${action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
+                      src={`/heroes/${(() => {
+                        const hero = heroesData.find(h => h.name === action.name);
+                        return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                      })()}`}
                       alt={action.name}
                       className={`w-full h-full object-cover object-top ${
                         action.type === 'ban' ? 'grayscale' : ''
@@ -287,7 +290,10 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                     }`}
                   >
                     <img 
-                      src={`/heroes/${action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.jpg`}
+                      src={`/heroes/${(() => {
+                        const hero = heroesData.find(h => h.name === action.name);
+                        return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                      })()}`}
                       alt={action.name}
                       className={`w-full h-full object-cover object-top ${
                         action.type === 'ban' ? 'grayscale' : ''

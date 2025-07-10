@@ -46,12 +46,14 @@ const ConfirmHeroSelection: React.FC<ConfirmHeroSelectionProps> = ({
           <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-800 border-2">
             <img 
               src={`/heroes/${(() => {
-                const hero = heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                // Fix specific character image names
-                if (hero === 'cloak-dagger') return 'cloak-dagger.jpg';
-                if (hero === 'jeff-the-land-shark') return 'jeff.jpg';
-                if (hero === 'rocket-raccoon') return 'rocket.jpg';
-                return `${hero}.jpg`;
+                // Use the exact image names from the heroes data
+                if (heroName === 'Cloak & Dagger') return 'cloak-dagger.jpg';
+                if (heroName === 'Jeff the Land Shark') return 'jeff.jpg';
+                if (heroName === 'Rocket Raccoon') return 'rocket.jpg';
+                if (heroName === 'Psylocke') return 'psylock.jpg';
+                if (heroName === 'Squirrel Girl') return 'squirer-girl.jpg';
+                // Default fallback
+                return heroName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
               })()}`}
               alt={heroName}
               className="w-full h-full object-cover object-top"
