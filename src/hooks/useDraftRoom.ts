@@ -10,36 +10,19 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
   const { toast } = useToast()
 
   // Generate draft sequence
-  const generateDraftSequence = (draftSystem: string = 'MRC') => {
-    if (draftSystem === 'MRI') {
-      // MRI Draft Sequence (Blue = team1, Red = team2)
-      return [
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-        { team: 'team2', action: 'protect' }, // Red protects 1
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 2 (first)
-        { team: 'team2', action: 'ban' },     // Red bans 2 (second)
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-      ]
-    } else {
-      // MRC Draft Sequence (Original)
-      return [
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-        { team: 'team2', action: 'protect' },
-        { team: 'team1', action: 'protect' },
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-        { team: 'team2', action: 'protect' },
-        { team: 'team1', action: 'protect' },
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-      ]
-    }
+  const generateDraftSequence = () => {
+    return [
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+      { team: 'team2', action: 'protect' },
+      { team: 'team1', action: 'protect' },
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+      { team: 'team2', action: 'protect' },
+      { team: 'team1', action: 'protect' },
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+    ]
   }
 
   const createRoom = async (settings: any) => {
@@ -56,8 +39,6 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
         banned_heroes: [],
         team1_protected: [],
         team2_protected: [],
-        team1_bans: [],
-        team2_bans: [],
         team1_player_id: userId
       }
 
@@ -152,7 +133,7 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
   const makeSelection = async (heroName: string) => {
     if (!room || !room.draft_started || room.draft_complete) return
 
-    const sequence = generateDraftSequence(room.settings.draftSystem)
+    const sequence = generateDraftSequence()
     const currentTurn = sequence[room.turn_number]
 
     if (currentTurn.team !== userTeam) {
@@ -188,14 +169,7 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
       const updates: Partial<DraftRoom> = {}
       
       if (currentTurn.action === 'ban') {
-        if (room.settings.draftSystem === 'MRI') {
-          // In MRI, bans are team-specific - store which team banned the hero
-          const teamBans = currentTurn.team === 'team1' ? 'team1_bans' : 'team2_bans'
-          updates[teamBans] = [...(room[teamBans] || []), heroName]
-        } else {
-          // In MRC, bans apply to both teams
-          updates.banned_heroes = [...room.banned_heroes, heroName]
-        }
+        updates.banned_heroes = [...room.banned_heroes, heroName]
       } else if (currentTurn.team === 'team1') {
         updates.team1_protected = [...room.team1_protected, heroName]
       } else {
@@ -249,8 +223,6 @@ export const useDraftRoom = (roomId: string | null, userTeam: string) => {
         banned_heroes: [],
         team1_protected: [],
         team2_protected: [],
-        team1_bans: [],
-        team2_bans: [],
       }
 
       const { data, error } = await supabase

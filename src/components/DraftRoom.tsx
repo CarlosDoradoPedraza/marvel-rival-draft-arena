@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Shield, X } from "lucide-react";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
@@ -17,7 +16,6 @@ interface DraftRoomProps {
     startingTeam: string;
     bansPerTeam: number;
     protectsPerTeam: number;
-    draftSystem: 'MRC' | 'MRI';
   };
 }
 
@@ -43,35 +41,18 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
 
   // Generate draft sequence
   const generateDraftSequence = () => {
-    if (settings.draftSystem === 'MRI') {
-      // MRI Draft Sequence (Blue = team1, Red = team2)
-      return [
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-        { team: 'team2', action: 'protect' }, // Red protects 1
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 2 (first)
-        { team: 'team2', action: 'ban' },     // Red bans 2 (second)
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-      ];
-    } else {
-      // MRC Draft Sequence (Original)
-      return [
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-        { team: 'team2', action: 'protect' },
-        { team: 'team1', action: 'protect' },
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-        { team: 'team2', action: 'protect' },
-        { team: 'team1', action: 'protect' },
-        { team: 'team1', action: 'ban' },
-        { team: 'team2', action: 'ban' },
-      ];
-    }
+    return [
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+      { team: 'team2', action: 'protect' },
+      { team: 'team1', action: 'protect' },
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+      { team: 'team2', action: 'protect' },
+      { team: 'team1', action: 'protect' },
+      { team: 'team1', action: 'ban' },
+      { team: 'team2', action: 'ban' },
+    ];
   };
 
   const startDraft = () => {
@@ -195,8 +176,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <span className="text-gray-600">Draft System:</span>
-              <span className="font-medium text-gray-800">{settings.draftSystem === 'MRC' ? '🟢 MRC Draft' : '🟠 MRI Draft'}</span>
+              <span className="text-gray-600">Mode:</span>
+              <span className="font-medium text-gray-800">Local Simulation</span>
               
               <span className="text-gray-600">Starting Team:</span>
               <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? settings.team1Name : settings.team2Name}</span>
@@ -253,99 +234,87 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       
       {/* Bans and Protections Display */}
       {draftStarted && (
-        <TooltipProvider>
-          <div className="grid grid-cols-2 gap-6">
-            {/* Team 1 */}
-            <Card className="bg-white border shadow-md">
-              <CardHeader className="pb-2 border-b">
-                <CardTitle className="text-lg text-center text-blue-600">{settings.team1Name}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  {actions.filter(action => action.team === 'team1').map((action, index) => (
-                    <Tooltip key={index}>
-                      <TooltipTrigger asChild>
-                        <div className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 cursor-pointer ${
-                          action.type === 'ban' ? 'border-red-500' : 'border-green-500'
-                        }`}>
-                          <img 
-                            src={`/heroes/${(() => {
-                              const hero = heroesData.find(h => h.name === action.name);
-                              return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
-                            })()}`}
-                            alt={action.name}
-                            className={`w-full h-full object-cover object-top ${
-                              action.type === 'ban' ? 'grayscale' : ''
-                            }`}
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                            }}
-                          />
-                          <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
-                            {action.type === 'ban' ? (
-                              <X className="w-3 h-3 text-red-500" />
-                            ) : (
-                              <Shield className="w-3 h-3 text-green-500" />
-                            )}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="font-medium">{action.name}</p>
-                        <p className="text-xs opacity-75">{action.type === 'ban' ? 'Banned' : 'Protected'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            {/* Team 2 */}
-            <Card className="bg-white border shadow-md">
-              <CardHeader className="pb-2 border-b">
-                <CardTitle className="text-lg text-center text-[#D53C53]">{settings.team2Name}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  {actions.filter(action => action.team === 'team2').map((action, index) => (
-                    <Tooltip key={index}>
-                      <TooltipTrigger asChild>
-                        <div className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 cursor-pointer ${
-                          action.type === 'ban' ? 'border-red-500' : 'border-green-500'
-                        }`}>
-                          <img 
-                            src={`/heroes/${(() => {
-                              const hero = heroesData.find(h => h.name === action.name);
-                              return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
-                            })()}`}
-                            alt={action.name}
-                            className={`w-full h-full object-cover object-top ${
-                              action.type === 'ban' ? 'grayscale' : ''
-                            }`}
-                            onError={(e) => {
-                              e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
-                            }}
-                          />
-                          <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
-                            {action.type === 'ban' ? (
-                              <X className="w-3 h-3 text-red-500" />
-                            ) : (
-                              <Shield className="w-3 h-3 text-green-500" />
-                            )}
-                          </div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="font-medium">{action.name}</p>
-                        <p className="text-xs opacity-75">{action.type === 'ban' ? 'Banned' : 'Protected'}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TooltipProvider>
+        <div className="grid grid-cols-2 gap-6">
+          {/* Team 1 */}
+          <Card className="bg-white border shadow-md">
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-lg text-center text-blue-600">{settings.team1Name}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-2">
+                {actions.filter(action => action.team === 'team1').map((action, index) => (
+                  <div 
+                    key={index} 
+                    className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-green-500'
+                    }`}
+                  >
+                    <img 
+                      src={`/heroes/${(() => {
+                        const hero = heroesData.find(h => h.name === action.name);
+                        return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                      })()}`}
+                      alt={action.name}
+                      className={`w-full h-full object-cover object-top ${
+                        action.type === 'ban' ? 'grayscale' : ''
+                      }`}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                      }}
+                    />
+                    <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
+                      {action.type === 'ban' ? (
+                        <X className="w-3 h-3 text-red-500" />
+                      ) : (
+                        <Shield className="w-3 h-3 text-green-500" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Team 2 */}
+          <Card className="bg-white border shadow-md">
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-lg text-center text-[#D53C53]">{settings.team2Name}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-2">
+                {actions.filter(action => action.team === 'team2').map((action, index) => (
+                  <div 
+                    key={index} 
+                    className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 ${
+                      action.type === 'ban' ? 'border-red-500' : 'border-green-500'
+                    }`}
+                  >
+                    <img 
+                      src={`/heroes/${(() => {
+                        const hero = heroesData.find(h => h.name === action.name);
+                        return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                      })()}`}
+                      alt={action.name}
+                      className={`w-full h-full object-cover object-top ${
+                        action.type === 'ban' ? 'grayscale' : ''
+                      }`}
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                      }}
+                    />
+                    <div className="absolute bottom-0 right-0 bg-black/80 rounded-tl-md p-1">
+                      {action.type === 'ban' ? (
+                        <X className="w-3 h-3 text-red-500" />
+                      ) : (
+                        <Shield className="w-3 h-3 text-green-500" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
       
       <Card className="bg-white border shadow-md">
