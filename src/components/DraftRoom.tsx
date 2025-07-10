@@ -126,10 +126,46 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     });
   };
 
+  const redoLastAction = () => {
+    if (actions.length === 0 || !draftStarted || draftComplete) return;
+
+    const lastAction = actions[actions.length - 1];
+    
+    // Remove the last action
+    setActions(prev => prev.slice(0, -1));
+    
+    // Revert the game state
+    if (lastAction.type === 'ban') {
+      setBannedHeroes(prev => prev.filter(hero => hero !== lastAction.name));
+    } else if (lastAction.team === 'team1') {
+      setTeam1Protected(prev => prev.filter(hero => hero !== lastAction.name));
+    } else {
+      setTeam2Protected(prev => prev.filter(hero => hero !== lastAction.name));
+    }
+    
+    // Go back one turn
+    const sequence = generateDraftSequence();
+    const previousTurnIndex = turnNumber - 1;
+    if (previousTurnIndex >= 0) {
+      const previousTurn = sequence[previousTurnIndex];
+      setCurrentTeam(previousTurn.team);
+      setCurrentAction(previousTurn.action as 'ban' | 'protect');
+      setTurnNumber(previousTurnIndex);
+      setDraftComplete(false);
+    }
+    
+    toast({
+      title: "Action Undone",
+      description: `Reverted ${lastAction.type} of ${lastAction.name}`,
+    });
+  };
+
   // Filter heroes based on selected role
   const filteredHeroes = roleFilter === 'All' 
     ? heroesData 
     : heroesData.filter(hero => hero.role === roleFilter);
+
+  const [showHistory, setShowHistory] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -171,6 +207,17 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           >
             Reset Draft
           </Button>
+
+          {draftStarted && actions.length > 0 && (
+            <Button 
+              variant="outline" 
+              className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
+              onClick={redoLastAction}
+              disabled={draftComplete && actions.length === 0}
+            >
+              Undo Last
+            </Button>
+          )}
         </div>
       </div>
       
@@ -264,35 +311,47 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card className="bg-white border shadow-md">
-            <CardHeader className="pb-2 border-b">
-              <CardTitle className="text-xl text-center text-[#D53C53]">Hero Selection</CardTitle>
-              <div className="flex flex-wrap gap-2 justify-center mt-3">
-                {['All', 'Vanguard', 'Duelist', 'Strategist'].map((role) => (
-                  <Button
-                    key={role}
-                    variant={roleFilter === role ? "default" : "outline"}
-                    size="sm"
-                    className={`text-xs ${
-                      roleFilter === role 
-                        ? 'bg-[#D53C53] text-white hover:bg-[#c02d45]' 
-                        : 'border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10'
-                    }`}
-                    onClick={() => setRoleFilter(role)}
-                  >
-                    {role}
-                    {role !== 'All' && (
-                      <span className="ml-1 text-xs opacity-75">
-                        ({heroesData.filter(h => h.role === role).length})
-                      </span>
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
+      <Card className="bg-white border shadow-md">
+        <CardHeader className="pb-2 border-b">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-xl text-[#D53C53]">Hero Selection</CardTitle>
+            {draftStarted && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                {showHistory ? 'Hide History' : 'Show History'}
+              </Button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center mt-3">
+            {['All', 'Vanguard', 'Duelist', 'Strategist'].map((role) => (
+              <Button
+                key={role}
+                variant={roleFilter === role ? "default" : "outline"}
+                size="sm"
+                className={`text-xs ${
+                  roleFilter === role 
+                    ? 'bg-[#D53C53] text-white hover:bg-[#c02d45]' 
+                    : 'border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10'
+                }`}
+                onClick={() => setRoleFilter(role)}
+              >
+                {role}
+                {role !== 'All' && (
+                  <span className="ml-1 text-xs opacity-75">
+                    ({heroesData.filter(h => h.role === role).length})
+                  </span>
+                )}
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <div className={showHistory ? "lg:col-span-3" : "lg:col-span-4"}>
               <HeroGrid 
                 heroes={filteredHeroes}
                 bannedHeroes={bannedHeroes}
@@ -303,14 +362,16 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 currentTeam={currentTeam}
                 currentAction={currentAction}
               />
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div>
-          <DraftHistory actions={actions} heroes={heroesData} />
-        </div>
-      </div>
+            </div>
+            
+            {showHistory && (
+              <div className="lg:col-span-1">
+                <DraftHistory actions={actions} heroes={heroesData} />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

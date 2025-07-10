@@ -70,7 +70,7 @@ const HeroGrid: React.FC<HeroGridProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2 md:gap-3">
         {heroes.map((hero) => {
           const { status, team } = getHeroStatus(hero);
           
@@ -100,11 +100,11 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                         }}
                       />
                     </div>
-                    <div className="w-full p-3 bg-gray-900 text-center">
-                      <p className="text-sm font-medium truncate text-white">{hero.name}</p>
+                    <div className="w-full p-1.5 bg-gray-900 text-center">
+                      <p className="text-xs font-medium truncate text-white">{hero.name}</p>
                       <Badge 
                         variant="outline" 
-                        className="mt-2 text-xs px-2 py-1 truncate bg-[#FCDF36] text-[#333645] border-[#FCDF36]/50 font-medium"
+                        className="mt-1 text-xs px-1 py-0.5 truncate bg-[#FCDF36] text-[#333645] border-[#FCDF36]/50 font-medium text-xs"
                       >
                         {hero.role}
                       </Badge>
@@ -130,7 +130,7 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                     )}
                     {!disabled && status === 'available' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 opacity-0 hover:opacity-100 transition-all duration-300">
-                        <p className={`font-bold ${currentAction === 'ban' ? 'text-yellow-500' : 'text-green-500'} text-lg tracking-wider px-3 py-2 bg-black/80 rounded-full`}>
+                        <p className={`font-bold ${currentAction === 'ban' ? 'text-yellow-500' : 'text-green-500'} text-sm tracking-wider px-2 py-1 bg-black/80 rounded-full`}>
                           {currentAction === 'ban' ? 'BAN?' : 'PROTECT?'}
                         </p>
                       </div>
