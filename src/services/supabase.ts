@@ -13,6 +13,9 @@ export type DraftRoom = {
     startingTeam: string
     bansPerTeam: number
     protectsPerTeam: number
+    draftSystem: 'MRC' | 'MRI'
+    team1Name: string
+    team2Name: string
   }
   current_team: string
   current_action: 'ban' | 'protect'
@@ -22,6 +25,8 @@ export type DraftRoom = {
   banned_heroes: string[]
   team1_protected: string[]
   team2_protected: string[]
+  team1_bans?: string[]
+  team2_bans?: string[]
   team1_player_id?: string
   team2_player_id?: string
 }

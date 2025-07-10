@@ -13,6 +13,7 @@ interface CreateRoomProps {
     startingTeam: string;
     bansPerTeam: number;
     protectsPerTeam: number;
+    draftSystem: 'MRC' | 'MRI';
   }) => void;
 }
 
@@ -23,6 +24,7 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
     startingTeam: 'team1',
     bansPerTeam: 3,
     protectsPerTeam: 2,
+    draftSystem: 'MRC' as 'MRC' | 'MRI',
   });
 
   const handleChange = (key: string, value: string | number) => {
@@ -63,6 +65,22 @@ const CreateRoom: React.FC<CreateRoomProps> = ({ onCreateRoom }) => {
             placeholder="Enter team 2 name"
             className="bg-white border"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="draft-system" className="text-gray-700">Draft System</Label>
+          <Select 
+            value={settings.draftSystem} 
+            onValueChange={(value) => handleChange('draftSystem', value)}
+          >
+            <SelectTrigger id="draft-system" className="bg-white border">
+              <SelectValue placeholder="Select draft system" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border">
+              <SelectItem value="MRC">🟢 MRC Draft (Marvel Rivals Championship)</SelectItem>
+              <SelectItem value="MRI">🟠 MRI Draft (Marvel Rivals Ignite)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
