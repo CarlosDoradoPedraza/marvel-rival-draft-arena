@@ -55,6 +55,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         { team: 'team1', action: 'ban' },     // Blue bans 1
         { team: 'team1', action: 'protect' }, // Blue protects 1
         { team: 'team2', action: 'ban' },     // Red bans 1
+        { team: 'team2', action: 'protect' }, // Red protects 1 (final)
+        { team: 'team1', action: 'ban' },     // Blue bans 1 (final)
       ];
     } else {
       // MRC mode - original sequence
