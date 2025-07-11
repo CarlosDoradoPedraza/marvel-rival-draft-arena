@@ -89,6 +89,20 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     const sequence = generateDraftSequence();
     const currentTurn = sequence[turnNumber];
 
+    // Check if selection is valid for MRI mode
+    if (settings.draftMode === 'MRI' && currentTurn.action === 'protect') {
+      // In MRI mode, a team can only protect a character if it hasn't been banned for them
+      const isBannedForCurrentTeam = bannedHeroes.includes(`${heroName}:${currentTurn.team}`);
+      if (isBannedForCurrentTeam) {
+        toast({
+          title: "Cannot Protect",
+          description: `${heroName} has been banned for your team and cannot be protected`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Add action to history
     const newAction: Action = {
       team: currentTurn.team,
@@ -103,20 +117,22 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       if (settings.draftMode === 'MRI') {
         // In MRI mode, bans are team-specific (only restrict opponent)
         if (currentTurn.team === 'team1') {
-          setTeam2Protected(prev => prev.filter(h => h !== heroName)); // Remove from team2 protections if exists
-          setBannedHeroes(prev => [...prev.filter(h => h !== heroName), `${heroName}:team2`]);
+          // Team 1 bans for Team 2, so Team 2 cannot pick this hero
+          setBannedHeroes(prev => [...prev, `${heroName}:team2`]);
         } else {
-          setTeam1Protected(prev => prev.filter(h => h !== heroName)); // Remove from team1 protections if exists  
-          setBannedHeroes(prev => [...prev.filter(h => h !== heroName), `${heroName}:team1`]);
+          // Team 2 bans for Team 1, so Team 1 cannot pick this hero
+          setBannedHeroes(prev => [...prev, `${heroName}:team1`]);
         }
       } else {
         // MRC mode - global bans
         setBannedHeroes(prev => [...prev, heroName]);
       }
-    } else if (currentTurn.team === 'team1') {
-      setTeam1Protected(prev => [...prev, heroName]);
-    } else {
-      setTeam2Protected(prev => [...prev, heroName]);
+    } else if (currentTurn.action === 'protect') {
+      if (currentTurn.team === 'team1') {
+        setTeam1Protected(prev => [...prev, heroName]);
+      } else {
+        setTeam2Protected(prev => [...prev, heroName]);
+      }
     }
 
     // Move to next turn

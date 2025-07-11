@@ -43,25 +43,48 @@ const HeroGrid: React.FC<HeroGridProps> = ({
       const isBannedForTeam1 = bannedHeroes.includes(`${hero.name}:team1`);
       const isBannedForTeam2 = bannedHeroes.includes(`${hero.name}:team2`);
       
+      // Check protections first - protections prevent enemy bans
+      const isProtectedByTeam1 = team1Protected.includes(hero.name);
+      const isProtectedByTeam2 = team2Protected.includes(hero.name);
+      
+      if (isProtectedByTeam1) {
+        return { status: 'protected', team: 'team1' };
+      }
+      if (isProtectedByTeam2) {
+        return { status: 'protected', team: 'team2' };
+      }
+      
+      // Check if current team is banned from using this hero
       if (currentTeam === 'team1' && isBannedForTeam1) {
         return { status: 'banned', team: '' };
       }
       if (currentTeam === 'team2' && isBannedForTeam2) {
         return { status: 'banned', team: '' };
       }
+      
+      // For ban actions in MRI mode, check if target can be banned
+      if (currentAction === 'ban') {
+        const targetTeam = currentTeam === 'team1' ? 'team2' : 'team1';
+        const isTargetProtected = targetTeam === 'team1' ? isProtectedByTeam1 : isProtectedByTeam2;
+        
+        if (isTargetProtected) {
+          return { status: 'protected', team: targetTeam };
+        }
+      }
     } else {
       // MRC mode - global bans
       if (bannedHeroes.includes(hero.name)) {
         return { status: 'banned', team: '' };
       }
+      
+      if (team1Protected.includes(hero.name)) {
+        return { status: 'protected', team: 'team1' };
+      }
+      if (team2Protected.includes(hero.name)) {
+        return { status: 'protected', team: 'team2' };
+      }
     }
     
-    if (team1Protected.includes(hero.name)) {
-      return { status: 'protected', team: 'team1' };
-    }
-    if (team2Protected.includes(hero.name)) {
-      return { status: 'protected', team: 'team2' };
-    }
     return { status: 'available', team: '' };
   };
 
