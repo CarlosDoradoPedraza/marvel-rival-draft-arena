@@ -12,6 +12,7 @@ const Index = () => {
     startingTeam: 'team1',
     bansPerTeam: 3,
     protectsPerTeam: 2,
+    draftMode: 'MRC' as 'MRC' | 'MRI',
   });
   const { toast } = useToast();
   

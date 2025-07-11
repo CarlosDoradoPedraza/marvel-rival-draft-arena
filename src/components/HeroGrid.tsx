@@ -20,6 +20,7 @@ interface HeroGridProps {
   disabled: boolean;
   currentTeam: string;
   currentAction: 'ban' | 'protect';
+  draftMode?: 'MRC' | 'MRI';
 }
 
 const HeroGrid: React.FC<HeroGridProps> = ({ 
@@ -30,15 +31,31 @@ const HeroGrid: React.FC<HeroGridProps> = ({
   onSelect,
   disabled,
   currentTeam,
-  currentAction
+  currentAction,
+  draftMode = 'MRC'
 }) => {
   const [pendingHero, setPendingHero] = useState<string | null>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   const getHeroStatus = (hero: Hero) => {
-    if (bannedHeroes.includes(hero.name)) {
-      return { status: 'banned', team: '' };
+    if (draftMode === 'MRI') {
+      // In MRI mode, check team-specific bans
+      const isBannedForTeam1 = bannedHeroes.includes(`${hero.name}:team1`);
+      const isBannedForTeam2 = bannedHeroes.includes(`${hero.name}:team2`);
+      
+      if (currentTeam === 'team1' && isBannedForTeam1) {
+        return { status: 'banned', team: '' };
+      }
+      if (currentTeam === 'team2' && isBannedForTeam2) {
+        return { status: 'banned', team: '' };
+      }
+    } else {
+      // MRC mode - global bans
+      if (bannedHeroes.includes(hero.name)) {
+        return { status: 'banned', team: '' };
+      }
     }
+    
     if (team1Protected.includes(hero.name)) {
       return { status: 'protected', team: 'team1' };
     }
