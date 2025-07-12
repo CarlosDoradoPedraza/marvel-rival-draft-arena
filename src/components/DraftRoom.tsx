@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -40,26 +40,26 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const [team2Protected, setTeam2Protected] = useState<string[]>([]);
   const [actions, setActions] = useState<Action[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>('All');
+  const [showHistory, setShowHistory] = useState(false);
 
   // Generate draft sequence based on mode
   const generateDraftSequence = () => {
     if (settings.draftMode === 'MRI') {
       return [
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-        { team: 'team2', action: 'protect' }, // Red protects 1
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 1 (first of 2)
-        { team: 'team2', action: 'ban' },     // Red bans 1 (second of 2)
-        { team: 'team1', action: 'ban' },     // Blue bans 1
-        { team: 'team1', action: 'protect' }, // Blue protects 1
-        { team: 'team2', action: 'ban' },     // Red bans 1
-        { team: 'team2', action: 'protect' }, // Red protects 1 (final)
-        { team: 'team1', action: 'ban' },     // Blue bans 1 (final)
+        { team: 'team1', action: 'ban' },
+        { team: 'team2', action: 'ban' },
+        { team: 'team2', action: 'protect' },
+        { team: 'team1', action: 'ban' },
+        { team: 'team1', action: 'protect' },
+        { team: 'team2', action: 'ban' },
+        { team: 'team2', action: 'ban' },
+        { team: 'team1', action: 'ban' },
+        { team: 'team1', action: 'protect' },
+        { team: 'team2', action: 'ban' },
+        { team: 'team2', action: 'protect' },
+        { team: 'team1', action: 'ban' },
       ];
     } else {
-      // MRC mode - original sequence
       return [
         { team: 'team1', action: 'ban' },
         { team: 'team2', action: 'ban' },
@@ -89,9 +89,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     const sequence = generateDraftSequence();
     const currentTurn = sequence[turnNumber];
 
-    // Check if selection is valid for MRI mode
     if (settings.draftMode === 'MRI' && currentTurn.action === 'protect') {
-      // In MRI mode, a team can only protect a character if it hasn't been banned for them
       const isBannedForCurrentTeam = bannedHeroes.includes(`${heroName}:${currentTurn.team}`);
       if (isBannedForCurrentTeam) {
         toast({
@@ -103,39 +101,32 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       }
     }
 
-    // Add action to history
     const newAction: Action = {
       team: currentTurn.team,
       type: currentTurn.action as 'ban' | 'protect',
       name: heroName,
       timestamp: new Date(),
     };
-    setActions(prev => [...prev, newAction]);
+    setActions((prev) => [...prev, newAction]);
 
-    // Update game state based on draft mode
     if (currentTurn.action === 'ban') {
       if (settings.draftMode === 'MRI') {
-        // In MRI mode, bans are team-specific (only restrict opponent)
         if (currentTurn.team === 'team1') {
-          // Team 1 bans for Team 2, so Team 2 cannot pick this hero
-          setBannedHeroes(prev => [...prev, `${heroName}:team2`]);
+          setBannedHeroes((prev) => [...prev, `${heroName}:team2`]);
         } else {
-          // Team 2 bans for Team 1, so Team 1 cannot pick this hero
-          setBannedHeroes(prev => [...prev, `${heroName}:team1`]);
+          setBannedHeroes((prev) => [...prev, `${heroName}:team1`]);
         }
       } else {
-        // MRC mode - global bans
-        setBannedHeroes(prev => [...prev, heroName]);
+        setBannedHeroes((prev) => [...prev, heroName]);
       }
     } else if (currentTurn.action === 'protect') {
       if (currentTurn.team === 'team1') {
-        setTeam1Protected(prev => [...prev, heroName]);
+        setTeam1Protected((prev) => [...prev, heroName]);
       } else {
-        setTeam2Protected(prev => [...prev, heroName]);
+        setTeam2Protected((prev) => [...prev, heroName]);
       }
     }
 
-    // Move to next turn
     const nextTurnIndex = turnNumber + 1;
     if (nextTurnIndex < sequence.length) {
       const nextTurn = sequence[nextTurnIndex];
@@ -167,7 +158,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     setTeam2Protected([]);
     setActions([]);
     setRoleFilter('All');
-    
+
     toast({
       title: "Draft Reset",
       description: "Draft has been reset",
@@ -178,30 +169,24 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     if (actions.length === 0 || !draftStarted || draftComplete) return;
 
     const lastAction = actions[actions.length - 1];
-    
-    // Remove the last action
-    setActions(prev => prev.slice(0, -1));
-    
-    // Revert the game state based on draft mode
+    setActions((prev) => prev.slice(0, -1));
+
     if (lastAction.type === 'ban') {
       if (settings.draftMode === 'MRI') {
-        // In MRI mode, remove team-specific ban
         if (lastAction.team === 'team1') {
-          setBannedHeroes(prev => prev.filter(hero => hero !== `${lastAction.name}:team2`));
+          setBannedHeroes((prev) => prev.filter((hero) => hero !== `${lastAction.name}:team2`));
         } else {
-          setBannedHeroes(prev => prev.filter(hero => hero !== `${lastAction.name}:team1`));
+          setBannedHeroes((prev) => prev.filter((hero) => hero !== `${lastAction.name}:team1`));
         }
       } else {
-        // MRC mode - remove global ban
-        setBannedHeroes(prev => prev.filter(hero => hero !== lastAction.name));
+        setBannedHeroes((prev) => prev.filter((hero) => hero !== lastAction.name));
       }
     } else if (lastAction.team === 'team1') {
-      setTeam1Protected(prev => prev.filter(hero => hero !== lastAction.name));
+      setTeam1Protected((prev) => prev.filter((hero) => hero !== lastAction.name));
     } else {
-      setTeam2Protected(prev => prev.filter(hero => hero !== lastAction.name));
+      setTeam2Protected((prev) => prev.filter((hero) => hero !== lastAction.name));
     }
-    
-    // Go back one turn
+
     const sequence = generateDraftSequence();
     const previousTurnIndex = turnNumber - 1;
     if (previousTurnIndex >= 0) {
@@ -211,22 +196,20 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       setTurnNumber(previousTurnIndex);
       setDraftComplete(false);
     }
-    
+
     toast({
       title: "Action Undone",
       description: `Reverted ${lastAction.type} of ${lastAction.name}`,
     });
   };
 
-  // Filter heroes based on selected role
-  const filteredHeroes = roleFilter === 'All' 
-    ? heroesData 
-    : heroesData.filter(hero => hero.role === roleFilter);
-
-  const [showHistory, setShowHistory] = useState(false);
+  const filteredHeroes = roleFilter === 'All'
+    ? heroesData
+    : heroesData.filter((hero) => hero.role === roleFilter);
 
   return (
     <div className="space-y-6">
+      {/* Draft Settings */}
       <div className="flex flex-wrap gap-4 justify-between items-center">
         <Card className="w-full md:w-auto bg-white border shadow-md">
           <CardHeader className="pb-2">
@@ -243,50 +226,32 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
                 }`}></span>
                 {settings.draftMode} Draft
               </span>
-              
               <span className="text-gray-600">Starting Team:</span>
-              <span className="font-medium text-gray-800">{settings.startingTeam === 'team1' ? settings.team1Name : settings.team2Name}</span>
-              
-              {settings.draftMode === 'MRC' && (
-                <>
-                  <span className="text-gray-600">Bans per Team:</span>
-                  <span className="font-medium text-gray-800">{settings.bansPerTeam}</span>
-                  
-                  <span className="text-gray-600">Protects per Team:</span>
-                  <span className="font-medium text-gray-800">{settings.protectsPerTeam}</span>
-                </>
-              )}
-              
-              {settings.draftMode === 'MRI' && (
-                <>
-                  <span className="text-gray-600">Format:</span>
-                  <span className="font-medium text-orange-600">Fixed Pro Sequence</span>
-                </>
-              )}
+              <span className="font-medium text-gray-800">
+                {settings.startingTeam === 'team1' ? settings.team1Name : settings.team2Name}
+              </span>
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="flex flex-wrap gap-3">
-          <Button 
+          <Button
             className="bg-[#D53C53] hover:bg-[#c02d45] text-white shadow-lg transition-all"
             onClick={startDraft}
             disabled={draftStarted}
           >
             Start Draft
           </Button>
-          
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-[#D53C53] text-[#D53C53] hover:bg-[#D53C53]/10"
             onClick={resetDraft}
           >
             Reset Draft
           </Button>
-
           {draftStarted && actions.length > 0 && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
               onClick={redoLastAction}
               disabled={draftComplete && actions.length === 0}
@@ -296,9 +261,10 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           )}
         </div>
       </div>
-      
+
+      {/* Draft Phase Indicator */}
       {draftStarted && (
-        <DraftPhaseIndicator 
+        <DraftPhaseIndicator
           currentTeam={currentTeam}
           currentAction={currentAction}
           isComplete={draftComplete}
@@ -307,7 +273,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           team2Name={settings.team2Name}
         />
       )}
-      
+
       {/* Bans and Protections Display */}
       {draftStarted && (
         <div className="grid grid-cols-2 gap-6">
@@ -319,18 +285,20 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
             <CardContent className="p-4">
               <TooltipProvider>
                 <div className="flex flex-wrap gap-2">
-                  {actions.filter(action => action.team === 'team1').map((action, index) => (
+                  {actions.filter((action) => action.team === 'team1').map((action, index) => (
                     <Tooltip key={index}>
                       <TooltipTrigger asChild>
-                        <div 
+                        <div
                           className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 cursor-pointer ${
                             action.type === 'ban' ? 'border-red-500' : 'border-green-500'
                           }`}
                         >
-                          <img 
+                          <img
                             src={`/heroes/${(() => {
-                              const hero = heroesData.find(h => h.name === action.name);
-                              return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                              const hero = heroesData.find((h) => h.name === action.name);
+                              return hero
+                                ? hero.image
+                                : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
                             })()}`}
                             alt={action.name}
                             className={`w-full h-full object-cover object-top ${
@@ -358,7 +326,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
               </TooltipProvider>
             </CardContent>
           </Card>
-          
+
           {/* Team 2 */}
           <Card className="bg-white border shadow-md">
             <CardHeader className="pb-2 border-b">
@@ -367,18 +335,20 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
             <CardContent className="p-4">
               <TooltipProvider>
                 <div className="flex flex-wrap gap-2">
-                  {actions.filter(action => action.team === 'team2').map((action, index) => (
+                  {actions.filter((action) => action.team === 'team2').map((action, index) => (
                     <Tooltip key={index}>
                       <TooltipTrigger asChild>
-                        <div 
+                        <div
                           className={`relative w-12 h-12 rounded-lg overflow-hidden bg-gray-800 border-2 cursor-pointer ${
                             action.type === 'ban' ? 'border-red-500' : 'border-green-500'
                           }`}
                         >
-                          <img 
+                          <img
                             src={`/heroes/${(() => {
-                              const hero = heroesData.find(h => h.name === action.name);
-                              return hero ? hero.image : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
+                              const hero = heroesData.find((h) => h.name === action.name);
+                              return hero
+                                ? hero.image
+                                : action.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.jpg';
                             })()}`}
                             alt={action.name}
                             className={`w-full h-full object-cover object-top ${
@@ -408,7 +378,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
           </Card>
         </div>
       )}
-      
+
+      {/* Hero Selection */}
       <Card className="bg-white border shadow-md">
         <CardHeader className="pb-2 border-b">
           <div className="flex justify-between items-center">
