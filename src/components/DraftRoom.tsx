@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, X } from "lucide-react";
+import PopupNotification from './PopupNotification'; // Import the popup component
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import HeroGrid from './HeroGrid';
 import DraftPhaseIndicator from './DraftPhaseIndicator';
@@ -30,6 +31,8 @@ interface Action {
 
 const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
   const { toast } = useToast();
+  const [popupContent, setPopupContent] = useState<string | null>(null); // Popup content
+const [showPopup, setShowPopup] = useState(false); // Popup visibility
   const [currentTeam, setCurrentTeam] = useState(settings.startingTeam);
   const [currentAction, setCurrentAction] = useState<'ban' | 'protect'>('ban');
   const [turnNumber, setTurnNumber] = useState(0);
@@ -85,10 +88,10 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
 
   const makeSelection = (heroName: string) => {
     if (!draftStarted || draftComplete) return;
-
+  
     const sequence = generateDraftSequence();
     const currentTurn = sequence[turnNumber];
-
+  
     if (settings.draftMode === 'MRI' && currentTurn.action === 'protect') {
       const isBannedForCurrentTeam = bannedHeroes.includes(`${heroName}:${currentTurn.team}`);
       if (isBannedForCurrentTeam) {
@@ -100,7 +103,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         return;
       }
     }
-
+  
     const newAction: Action = {
       team: currentTurn.team,
       type: currentTurn.action as 'ban' | 'protect',
@@ -108,7 +111,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
       timestamp: new Date(),
     };
     setActions((prev) => [...prev, newAction]);
-
+  
     if (currentTurn.action === 'ban') {
       if (settings.draftMode === 'MRI') {
         if (currentTurn.team === 'team1') {
@@ -126,25 +129,31 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
         setTeam2Protected((prev) => [...prev, heroName]);
       }
     }
-
+  
     const nextTurnIndex = turnNumber + 1;
     if (nextTurnIndex < sequence.length) {
       const nextTurn = sequence[nextTurnIndex];
       setCurrentTeam(nextTurn.team);
       setCurrentAction(nextTurn.action as 'ban' | 'protect');
       setTurnNumber(nextTurnIndex);
+  
+      // Update popup content for the next turn
+      const previousTeamName = currentTurn.team === 'team1' ? settings.team1Name : settings.team2Name;
+      const nextTeamName = nextTurn.team === 'team1' ? settings.team1Name : settings.team2Name;
+      const actionVerb = currentTurn.action === 'ban' ? 'banned' : 'protected';
+      const nextActionVerb = nextTurn.action === 'ban' ? 'ban' : 'protect';
+  
+      setPopupContent(`${previousTeamName} ${actionVerb} ${heroName}. Now it's ${nextTeamName}'s turn to ${nextActionVerb}.`);
+      setShowPopup(true);
     } else {
       setDraftComplete(true);
+      setPopupContent("Draft complete! All selections have been made.");
+      setShowPopup(true);
       toast({
         title: "Draft Complete",
         description: "All selections have been made",
       });
     }
-
-    toast({
-      title: `${currentTurn.team === 'team1' ? settings.team1Name : settings.team2Name} ${currentTurn.action}ned ${heroName}`,
-      description: `Selection confirmed`,
-    });
   };
 
   const resetDraft = () => {
@@ -209,6 +218,12 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
 
   return (
     <div className="space-y-6">
+          {showPopup && (
+      <PopupNotification
+        content={popupContent}
+        onClose={() => setShowPopup(false)}
+      />
+    )}
       {/* Draft Settings */}
       <div className="flex flex-wrap gap-4 justify-between items-center">
         <Card className="w-full md:w-auto bg-white border shadow-md">
