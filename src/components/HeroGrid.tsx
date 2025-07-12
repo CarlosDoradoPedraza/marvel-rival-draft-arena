@@ -54,22 +54,37 @@ const HeroGrid: React.FC<HeroGridProps> = ({
         return { status: 'protected', team: 'team2' };
       }
       
-      // Check if current team is banned from using this hero
-      if (currentTeam === 'team1' && isBannedForTeam1) {
-        return { status: 'banned', team: '' };
-      }
-      if (currentTeam === 'team2' && isBannedForTeam2) {
-        return { status: 'banned', team: '' };
-      }
-      
-      // For ban actions in MRI mode, check if target can be banned
+      // For ban actions in MRI mode
       if (currentAction === 'ban') {
+        // Check if current team has already banned this character
+        const currentTeamBannedThis = currentTeam === 'team1' ? 
+          bannedHeroes.includes(`${hero.name}:team2`) : // Team 1 bans for Team 2
+          bannedHeroes.includes(`${hero.name}:team1`);  // Team 2 bans for Team 1
+        
+        if (currentTeamBannedThis) {
+          return { status: 'banned-by-current-team', team: currentTeam };
+        }
+        
+        // Check if target team is protected by enemy (prevents banning)
         const targetTeam = currentTeam === 'team1' ? 'team2' : 'team1';
         const isTargetProtected = targetTeam === 'team1' ? isProtectedByTeam1 : isProtectedByTeam2;
         
         if (isTargetProtected) {
           return { status: 'protected', team: targetTeam };
         }
+      }
+      
+      // For protect actions, check if current team is banned from using this hero
+      if (currentAction === 'protect') {
+        const isBannedForCurrentTeam = currentTeam === 'team1' ? isBannedForTeam1 : isBannedForTeam2;
+        if (isBannedForCurrentTeam) {
+          return { status: 'banned', team: '' };
+        }
+      }
+      
+      // Show banned status if either team banned it (for display purposes)
+      if (isBannedForTeam1 || isBannedForTeam2) {
+        return { status: 'banned', team: '' };
       }
     } else {
       // MRC mode - global bans
@@ -89,7 +104,8 @@ const HeroGrid: React.FC<HeroGridProps> = ({
   };
 
   const handleHeroClick = (hero: Hero) => {
-    if (disabled || getHeroStatus(hero).status !== 'available') return;
+    const heroStatus = getHeroStatus(hero);
+    if (disabled || heroStatus.status !== 'available') return;
     
     setPendingHero(hero.name);
     setConfirmDialogOpen(true);
@@ -121,7 +137,8 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                   <div 
                     className={`
                       relative flex flex-col items-center rounded-lg overflow-hidden cursor-pointer transition-all duration-300
-                      ${status === 'banned' ? 'opacity-50 grayscale' : ''}
+                      ${status === 'banned' || status === 'banned-by-current-team' ? 'opacity-50 grayscale' : ''}
+                      ${status === 'banned-by-current-team' ? 'ring-2 ring-yellow-500' : ''}
                       ${status === 'protected' && team === 'team1' ? 'ring-2 ring-blue-500' : ''}
                       ${status === 'protected' && team === 'team2' ? 'ring-2 ring-red-500' : ''}
                       ${status === 'available' && !disabled ? 'hover:scale-105 hover:shadow-lg hover:shadow-purple-700/30' : ''}
@@ -149,9 +166,11 @@ const HeroGrid: React.FC<HeroGridProps> = ({
                         {hero.role}
                       </Badge>
                     </div>
-                    {status === 'banned' && (
+                    {(status === 'banned' || status === 'banned-by-current-team') && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                        <p className="font-bold text-red-500 text-lg tracking-wider">BANNED</p>
+                        <p className={`font-bold text-lg tracking-wider ${status === 'banned-by-current-team' ? 'text-yellow-500' : 'text-red-500'}`}>
+                          {status === 'banned-by-current-team' ? 'BANNED BY YOU' : 'BANNED'}
+                        </p>
                       </div>
                     )}
                     {status === 'protected' && (
