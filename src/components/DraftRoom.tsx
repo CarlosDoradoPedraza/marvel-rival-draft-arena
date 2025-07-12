@@ -112,16 +112,14 @@ const [showPopup, setShowPopup] = useState(false); // Popup visibility
     };
     setActions((prev) => [...prev, newAction]);
   
-    if (currentTurn.action === 'ban') {
-      if (settings.draftMode === 'MRI') {
-        if (currentTurn.team === 'team1') {
-          setBannedHeroes((prev) => [...prev, `${heroName}:team1`]);
-        } else {
-          setBannedHeroes((prev) => [...prev, `${heroName}:team2`]);
-        }
-      } else {
-        setBannedHeroes((prev) => [...prev, heroName]);
-      }
+   if (currentTurn.action === 'ban') {
+  if (settings.draftMode === 'MRI') {
+    // Ban for the OPPOSITE team!
+    const banningForTeam = currentTurn.team === 'team1' ? 'team2' : 'team1';
+    setBannedHeroes((prev) => [...prev, `${heroName}:${banningForTeam}`]);
+  } else {
+    setBannedHeroes((prev) => [...prev, heroName]);
+  }
     } else if (currentTurn.action === 'protect') {
       if (currentTurn.team === 'team1') {
         setTeam1Protected((prev) => [...prev, heroName]);
