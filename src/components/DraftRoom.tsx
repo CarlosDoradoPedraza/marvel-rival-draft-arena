@@ -112,9 +112,9 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ settings }) => {
     if (currentTurn.action === 'ban') {
       if (settings.draftMode === 'MRI') {
         if (currentTurn.team === 'team1') {
-          setBannedHeroes((prev) => [...prev, `${heroName}:team2`]);
-        } else {
           setBannedHeroes((prev) => [...prev, `${heroName}:team1`]);
+        } else {
+          setBannedHeroes((prev) => [...prev, `${heroName}:team2`]);
         }
       } else {
         setBannedHeroes((prev) => [...prev, heroName]);

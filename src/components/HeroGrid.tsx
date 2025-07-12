@@ -55,10 +55,9 @@ const HeroGrid: React.FC<HeroGridProps> = ({
       
       // For ban actions in MRI mode
       if (currentAction === 'ban') {
-        // Allow banning even if the other team has already banned the hero
         const currentTeamBannedThis = currentTeam === 'team1' 
-          ? isBannedForTeam1 
-          : isBannedForTeam2;
+          ? bannedHeroes.includes(`${hero.name}:team1`) 
+          : bannedHeroes.includes(`${hero.name}:team2`);
 
         // If the current team has already banned this hero, show it as banned
         if (currentTeamBannedThis) {
@@ -69,10 +68,10 @@ const HeroGrid: React.FC<HeroGridProps> = ({
         return { status: 'available', team: '' };
       }
       
-      // For protect actions, check if the hero is banned by either team
+      // For protect actions, check if the hero is banned by the opposing team
       if (currentAction === 'protect') {
-        const isBannedForCurrentTeam = currentTeam === 'team1' ? isBannedForTeam1 : isBannedForTeam2;
-        if (isBannedForCurrentTeam) {
+        const isBannedByOpponent = currentTeam === 'team1' ? isBannedForTeam2 : isBannedForTeam1;
+        if (isBannedByOpponent) {
           return { status: 'banned', team: '' };
         }
       }
