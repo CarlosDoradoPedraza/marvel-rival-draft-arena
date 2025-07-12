@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -56,25 +55,20 @@ const HeroGrid: React.FC<HeroGridProps> = ({
       
       // For ban actions in MRI mode
       if (currentAction === 'ban') {
-        // Check if current team has already banned this character
-        const currentTeamBannedThis = currentTeam === 'team1' ? 
-          bannedHeroes.includes(`${hero.name}:team2`) : // Team 1 bans for Team 2
-          bannedHeroes.includes(`${hero.name}:team1`);  // Team 2 bans for Team 1
-        
+        // Allow banning even if the other team has already banned the hero
+        const currentTeamBannedThis = currentTeam === 'team1' 
+          ? isBannedForTeam1 
+          : isBannedForTeam2;
+
         if (currentTeamBannedThis) {
           return { status: 'banned-by-current-team', team: currentTeam };
         }
-        
-        // Check if target team is protected by enemy (prevents banning)
-        const targetTeam = currentTeam === 'team1' ? 'team2' : 'team1';
-        const isTargetProtected = targetTeam === 'team1' ? isProtectedByTeam1 : isProtectedByTeam2;
-        
-        if (isTargetProtected) {
-          return { status: 'protected', team: targetTeam };
-        }
+
+        // Heroes are available for banning regardless of the other team's bans
+        return { status: 'available', team: '' };
       }
       
-      // For protect actions, check if current team is banned from using this hero
+      // For protect actions, check if the hero is banned by either team
       if (currentAction === 'protect') {
         const isBannedForCurrentTeam = currentTeam === 'team1' ? isBannedForTeam1 : isBannedForTeam2;
         if (isBannedForCurrentTeam) {
