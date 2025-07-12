@@ -33,15 +33,17 @@ export const heroesData = [
   { id: '28', name: 'Storm', role: 'Duelist', image: 'storm.jpg' },
   { id: '29', name: 'Winter Soldier', role: 'Duelist', image: 'winter-soldier.jpg' },
   { id: '30', name: 'Wolverine', role: 'Duelist', image: 'wolverine.jpg' },
+  { id: '31', name: 'Phoenix', role: 'Duelist', image: 'phoenix.jpg' },
+  { id: '32', name: 'Blade', role: 'Duelist', image: 'blade.jpg' },
 
   // Strategist (Support)
-  { id: '31', name: 'Adam Warlock', role: 'Strategist', image: 'adam-warlock.jpg' },
-  { id: '32', name: 'Cloak & Dagger', role: 'Strategist', image: 'cloak-dagger.jpg' },
-  { id: '33', name: 'Invisible Woman', role: 'Strategist', image: 'invisible-woman.jpg' },
-  { id: '34', name: 'Jeff the Land Shark', role: 'Strategist', image: 'jeff.jpg' },
-  { id: '35', name: 'Loki', role: 'Strategist', image: 'loki.jpg' },
-  { id: '36', name: 'Luna Snow', role: 'Strategist', image: 'luna-snow.jpg' },
-  { id: '37', name: 'Mantis', role: 'Strategist', image: 'mantis.jpg' },
-  { id: '38', name: 'Rocket Raccoon', role: 'Strategist', image: 'rocket.jpg' },
-  { id: '39', name: 'Ultron', role: 'Strategist', image: 'ultron.jpg' }
+  { id: '33', name: 'Adam Warlock', role: 'Strategist', image: 'adam-warlock.jpg' },
+  { id: '34', name: 'Cloak & Dagger', role: 'Strategist', image: 'cloak-dagger.jpg' },
+  { id: '35', name: 'Invisible Woman', role: 'Strategist', image: 'invisible-woman.jpg' },
+  { id: '36', name: 'Jeff the Land Shark', role: 'Strategist', image: 'jeff.jpg' },
+  { id: '37', name: 'Loki', role: 'Strategist', image: 'loki.jpg' },
+  { id: '38', name: 'Luna Snow', role: 'Strategist', image: 'luna-snow.jpg' },
+  { id: '39', name: 'Mantis', role: 'Strategist', image: 'mantis.jpg' },
+  { id: '40', name: 'Rocket Raccoon', role: 'Strategist', image: 'rocket.jpg' },
+  { id: '41', name: 'Ultron', role: 'Strategist', image: 'ultron.jpg' }
 ];
