@@ -60,6 +60,7 @@ const HeroGrid: React.FC<HeroGridProps> = ({
           ? isBannedForTeam1 
           : isBannedForTeam2;
 
+        // If the current team has already banned this hero, show it as banned
         if (currentTeamBannedThis) {
           return { status: 'banned-by-current-team', team: currentTeam };
         }
