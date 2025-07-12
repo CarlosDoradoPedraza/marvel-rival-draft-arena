@@ -46,15 +46,38 @@ const HeroGrid: React.FC<HeroGridProps> = ({
       const isProtectedByTeam1 = team1Protected.includes(hero.name);
       const isProtectedByTeam2 = team2Protected.includes(hero.name);
       
-      if (isProtectedByTeam1) {
-        return { status: 'protected', team: 'team1' };
+      if (currentAction === 'protect') {
+        // For protect actions, check if the hero is banned by the opposing team
+        const isBannedByOpponent = currentTeam === 'team1' ? isBannedForTeam2 : isBannedForTeam1;
+        if (isBannedByOpponent) {
+          return { status: 'banned', team: '' };
+        }
+
+        // Allow the current team to protect the hero, even if the other team has already protected it
+        if (currentTeam === 'team1' && isProtectedByTeam2) {
+          return { status: 'available', team: '' };
+        }
+        if (currentTeam === 'team2' && isProtectedByTeam1) {
+          return { status: 'available', team: '' };
+        }
+
+        // Show as protected only if the current team has protected it
+        if (currentTeam === 'team1' && isProtectedByTeam1) {
+          return { status: 'protected', team: 'team1' };
+        }
+        if (currentTeam === 'team2' && isProtectedByTeam2) {
+          return { status: 'protected', team: 'team2' };
+        }
       }
-      if (isProtectedByTeam2) {
-        return { status: 'protected', team: 'team2' };
-      }
-      
+
       // For ban actions in MRI mode
       if (currentAction === 'ban') {
+        // If the hero is protected by the opposing team, it cannot be banned
+        const isProtectedByOpponent = currentTeam === 'team1' ? isProtectedByTeam2 : isProtectedByTeam1;
+        if (isProtectedByOpponent) {
+          return { status: 'protected', team: currentTeam === 'team1' ? 'team2' : 'team1' };
+        }
+
         const currentTeamBannedThis = currentTeam === 'team1' 
           ? bannedHeroes.includes(`${hero.name}:team1`) 
           : bannedHeroes.includes(`${hero.name}:team2`);
@@ -66,14 +89,6 @@ const HeroGrid: React.FC<HeroGridProps> = ({
 
         // Heroes are available for banning regardless of the other team's bans
         return { status: 'available', team: '' };
-      }
-      
-      // For protect actions, check if the hero is banned by the opposing team
-      if (currentAction === 'protect') {
-        const isBannedByOpponent = currentTeam === 'team1' ? isBannedForTeam2 : isBannedForTeam1;
-        if (isBannedByOpponent) {
-          return { status: 'banned', team: '' };
-        }
       }
       
       // Show banned status if either team banned it (for display purposes)
